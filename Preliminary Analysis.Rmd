@@ -23,19 +23,19 @@ tx_bb_entrepreneur_merged <- read_csv("https://raw.githubusercontent.com/jwroyce
 str(tx_bb_entrepreneur_merged)
 ```
 
-> ### Correlation Matrix for Preliminary Set of Variables
+## Correlation Matrix for Preliminary Set of Variables
 
 Basic correlation matrix with some preliminary variables.
 
-* IRR2010: Rural index (larger = rural)
-* proprietors_2017: # of sole proprietors in TX
-* pct_proprietors_employment_2017: % of sole proprietors in total employment
-* pct_broadband_FCC: FCC broadband availability in % (2017)
-* pct_broadband_MS: MS broadband availability in % (2019)
-* venturedensitydec19: Venture density by GoDaddy
-* highlyactive_vddec19: Highly active venture density by GoDaddy
-* prosperityindex2016: Prosperity index
-* frac_BB.dec: % of M-Lab testers with over 25mbps of DL speed & 3mbps of UL
+* `IRR2010`: Rural index (larger = rural)
+* `proprietors_2017`: # of sole proprietors in TX
+* `pct_proprietors_employment_2017`: % of sole proprietors in total employment
+* `pct_broadband_FCC`: FCC broadband availability in % (2017)
+* `pct_broadband_MS`: MS broadband availability in % (2019)
+* `venturedensitydec19`: Venture density by GoDaddy
+* `highlyactive_vddec19`: Highly active venture density by GoDaddy
+* `prosperityindex2016`: Prosperity index
+* `frac_BB.dec`: % of M-Lab testers with over 25mbps of DL speed & 3mbps of UL
 
 
 ```{r Correlation Table}
@@ -50,7 +50,7 @@ tx_bb_entrepreneur_merged %>%
 
 ```
 
-> ### Correlation Matrix with more Information
+### Correlation Matrix with more Information
 
 A correlation matrix with more in-depth information using the `chart.Correlation()` function in package `PerformanceAnalytics`.
 
@@ -64,7 +64,7 @@ tx_bb_entrepreneur_merged %>%
 
 ```
 
-> ### Preliminary Exploration of Relationships further with Regressions
+## Preliminary Exploration of Relationships further with Regressions
 
 Few models to examine relationships between **entrepreneurship** and **broadband**. In general, I take the entrepreneurship measures as the dependent variable and others as the independent. Following the ASU white paper analysis, venture density is explored as a measure of entrepreneurial activities online. Sole proprietors share in total employment is taken into IV as it represents general small-mid sized business activities, but not all of them are active online as reflected in the venture density factor.
 
@@ -101,7 +101,7 @@ stargazer(prem_model, prem_model2, prem_model3, title = "Preliminary Regression 
 ```
 
 
-> ### Comaparing Different Broadband Measures
+## Comaparing Different Broadband Measures
 
 Preliminary explorations reveal interesting discrepancies between different measures of broadband. Here I will explore how these measures paint different pictures of broadband of Texas.
 

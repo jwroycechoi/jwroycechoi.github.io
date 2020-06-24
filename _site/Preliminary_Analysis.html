@@ -320,20 +320,19 @@ library(gridExtra)
 tx_bb_entrepreneur_merged &lt;- read_csv(&quot;https://raw.githubusercontent.com/jwroycechoi/broadband-entrepreneurship/master/Datasets/Broadband-Entrepreneurship-TX-merged.csv&quot;)
 
 str(tx_bb_entrepreneur_merged)</code></pre>
-<blockquote>
-<h3 id="correlation-matrix-for-preliminary-set-of-variables">Correlation Matrix for Preliminary Set of Variables</h3>
-</blockquote>
+<div id="correlation-matrix-for-preliminary-set-of-variables" class="section level2">
+<h2>Correlation Matrix for Preliminary Set of Variables</h2>
 <p>Basic correlation matrix with some preliminary variables.</p>
 <ul>
-<li>IRR2010: Rural index (larger = rural)</li>
-<li>proprietors_2017: # of sole proprietors in TX</li>
-<li>pct_proprietors_employment_2017: % of sole proprietors in total employment</li>
-<li>pct_broadband_FCC: FCC broadband availability in % (2017)</li>
-<li>pct_broadband_MS: MS broadband availability in % (2019)</li>
-<li>venturedensitydec19: Venture density by GoDaddy</li>
-<li>highlyactive_vddec19: Highly active venture density by GoDaddy</li>
-<li>prosperityindex2016: Prosperity index</li>
-<li>frac_BB.dec: % of M-Lab testers with over 25mbps of DL speed &amp; 3mbps of UL</li>
+<li><code>IRR2010</code>: Rural index (larger = rural)</li>
+<li><code>proprietors_2017</code>: # of sole proprietors in TX</li>
+<li><code>pct_proprietors_employment_2017</code>: % of sole proprietors in total employment</li>
+<li><code>pct_broadband_FCC</code>: FCC broadband availability in % (2017)</li>
+<li><code>pct_broadband_MS</code>: MS broadband availability in % (2019)</li>
+<li><code>venturedensitydec19</code>: Venture density by GoDaddy</li>
+<li><code>highlyactive_vddec19</code>: Highly active venture density by GoDaddy</li>
+<li><code>prosperityindex2016</code>: Prosperity index</li>
+<li><code>frac_BB.dec</code>: % of M-Lab testers with over 25mbps of DL speed &amp; 3mbps of UL</li>
 </ul>
 <pre class="r"><code>#### Correlation between variabes ####
 
@@ -481,9 +480,8 @@ tx_bb_entrepreneur_merged %&gt;%
 </tr>
 </tbody>
 </table>
-<blockquote>
-<h3 id="correlation-matrix-with-more-information">Correlation Matrix with more Information</h3>
-</blockquote>
+<div id="correlation-matrix-with-more-information" class="section level3">
+<h3>Correlation Matrix with more Information</h3>
 <p>A correlation matrix with more in-depth information using the <code>chart.Correlation()</code> function in package <code>PerformanceAnalytics</code>.</p>
 <pre class="r"><code>#install.packages(&quot;PerformanceAnalytics&quot;)
 
@@ -492,9 +490,10 @@ tx_bb_entrepreneur_merged %&gt;%
          venturedensitydec19, highlyactive_vddec19, prosperityindex2016, frac_BB.dec) %&gt;%
   PerformanceAnalytics::chart.Correlation(histogram = T)</code></pre>
 <p><img src="Preliminary_Analysis_files/figure-html/Correlation%20Matrix-1.png" width="672" style="display: block; margin: auto;" /></p>
-<blockquote>
-<h3 id="preliminary-exploration-of-relationships-further-with-regressions">Preliminary Exploration of Relationships further with Regressions</h3>
-</blockquote>
+</div>
+</div>
+<div id="preliminary-exploration-of-relationships-further-with-regressions" class="section level2">
+<h2>Preliminary Exploration of Relationships further with Regressions</h2>
 <p>Few models to examine relationships between <strong>entrepreneurship</strong> and <strong>broadband</strong>. In general, I take the entrepreneurship measures as the dependent variable and others as the independent. Following the ASU white paper analysis, venture density is explored as a measure of entrepreneurial activities online. Sole proprietors share in total employment is taken into IV as it represents general small-mid sized business activities, but not all of them are active online as reflected in the venture density factor.</p>
 <pre class="r"><code>#### Exploring the relationships further with regressions ####
 
@@ -823,9 +822,9 @@ F Statistic
 </td>
 </tr>
 </table>
-<blockquote>
-<h3 id="comaparing-different-broadband-measures">Comaparing Different Broadband Measures</h3>
-</blockquote>
+</div>
+<div id="comaparing-different-broadband-measures" class="section level2">
+<h2>Comaparing Different Broadband Measures</h2>
 <p>Preliminary explorations reveal interesting discrepancies between different measures of broadband. Here I will explore how these measures paint different pictures of broadband of Texas.</p>
 <pre class="r"><code>#### Comparing Broadband Measures in the Dataset ####
 
@@ -994,6 +993,7 @@ grid.arrange(
   nrow = 2, ncol = 3, top = &quot;Correlations b/w Broadband Measures&quot;
 )</code></pre>
 <p><img src="Preliminary_Analysis_files/figure-html/Correlation%20between%20BB%20measures-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
 
 <p>Copyright &copy; 2020 Jaewon Royce Choi, TIPI. All rights reserved.</p>
 

@@ -26,20 +26,20 @@ tx_bb_entrepreneur_merged <- read_csv("https://raw.githubusercontent.com/jwroyce
 
 ```
 
-> ### Broadband and Entrepreneurship
+## Broadband and Entrepreneurship
 
 First, let's take another look at the variables that I examined in the previous preliminary analysis.
 
-* IRR2010: Rural index (larger = rural)
-* proprietors_2017: # of sole proprietors in TX
-* pct_proprietors_employment_2017: % of sole proprietors in total employment
-* pct_broadband_FCC: FCC broadband availability in % (2017)
-* pct_broadband_MS: MS broadband availability in % (2019)
-* pctbbfrac_ASU: ACS broadband subscription measure used by the ASU white paper
-* venturedensitydec19: Venture density by GoDaddy
-* highlyactive_vddec19: Highly active venture density by GoDaddy
-* prosperityindex2016: Prosperity index
-* frac_BB.dec: % of M-Lab testers with over 25mbps of DL speed & 3mbps of UL
+* `IRR2010`: Rural index (larger = rural)
+* `proprietors_2017`: # of sole proprietors in TX
+* `pct_proprietors_employment_2017`: % of sole proprietors in total employment
+* `pct_broadband_FCC`: FCC broadband availability in % (2017)
+* `pct_broadband_MS`: MS broadband availability in % (2019)
+* `pctbbfrac_ASU`: ACS broadband subscription measure used by the ASU white paper
+* `venturedensitydec19`: Venture density by GoDaddy
+* `highlyactive_vddec19`: Highly active venture density by GoDaddy
+* `prosperityindex2016`: Prosperity index
+* `frac_BB.dec`: % of M-Lab testers with over 25mbps of DL speed & 3mbps of UL
 
 Since there are several venture density variables measured in different time periods, I will create an aggregate variable averaging the venture densities over the time period.
 
@@ -62,11 +62,11 @@ Here I investigate **models that estimate broadband variables' effect on the ent
 
 Entrepreneurial outcomes can be represented by several variables in this dataset. As the ASU research team's white paper argued, the venture density provided by GoDaddy activities reflects actual entrepreneurial activities in the form of online domain creation. In the dataset, we also have Texas state's sole proprietor statistics. These variables reflect small and medium sized businesses in each county.
 
-##### Control Variables
+#### Control Variables
 
 For control variables, various demographic measures derived from the ACS estimates are available in the dataset. Furthermore, the ruralithy of the counties are reflected in the IRR index. Number of population, and regional intustry characteristics will be also included as control variables.
 
-> #### FCC Broadband Availability
+### FCC Broadband Availability
 
 ```{r FCC Regression Analyses, results='asis'}
 #install.packages("lm.beta")
@@ -136,7 +136,7 @@ stargazer(std_model_fcc_vd, std_model_fcc_hvd, std_model_fcc_pro, title = "Stand
           omit.stat = c("ser"), no.space = TRUE)
 ```
 
-> #### MS Broadband Availability
+### MS Broadband Availability
 
 ```{r MS Regression Analyses, results='asis'}
 #### Model 2 ####
@@ -205,7 +205,7 @@ stargazer(std_model_ms_vd, std_model_ms_hvd, std_model_ms_pro, title = "Standard
 
 ```
 
-> #### ACS Broadband Subscription Level
+### ACS Broadband Subscription Level
 
 ```{r ACS Regression Analyses, results='asis'}
 #### Model 3 ####
@@ -275,7 +275,7 @@ stargazer(std_model_acs_vd, std_model_acs_hvd, std_model_acs_pro, title = "Stand
 
 ```
 
-> #### M-Lab Broadband Availability
+### M-Lab Broadband Availability
 
 ```{r M-Lab Regression Analyses, results='asis'}
 #### Model 4 ####
@@ -345,11 +345,11 @@ stargazer(std_model_mlab_vd, std_model_mlab_hvd, std_model_mlab_pro, title = "St
 
 ```
 
-##### Models with Fewer Control Variables
+## Models with Fewer Control Variables
 
 Below, simpler models with fewer, yet important control variables will be explored. In a previous meeting with Dr.Brian Whitacre, he suggested age and education might be meaningful control variables. Here I will use rurality index, population, education, and age cohort variables as control variables.
 
-> #### FCC Broadband Availability
+### FCC Broadband Availability
 
 ```{r FCC Simpler Regression Models, results='asis'}
 ## Fewer Control Variables: Rurality, population, education level, age cohorts
@@ -378,7 +378,7 @@ stargazer(model_fcc_vd2, model_fcc_hvd2, model_fcc_pro2, type = "html", align = 
 
 ```
 
-> #### MS Broadband Availability
+### MS Broadband Availability
 
 ```{r MS Simpler Models, results='asis'}
 ## MS Broadband
@@ -405,7 +405,7 @@ stargazer(model_ms_vd2, model_ms_hvd2, model_ms_pro2, type = "html", align = T,
 
 ```
 
-> #### ACS Broadband Subscription Level
+### ACS Broadband Subscription Level
 
 ```{r ACS Simpler Models, results='asis'}
 ## ACS Broadband
@@ -433,7 +433,7 @@ stargazer(model_acs_vd2, model_acs_hvd2, model_acs_pro2, type = "html", align = 
 
 ```
 
-> #### M-Lab Broadband Availability
+### M-Lab Broadband Availability
 
 ```{r M-Lab Simpler Models, results='asis'}
 ## ACS Broadband

@@ -320,21 +320,20 @@ library(stargazer)
 
 ## Read in dataset
 tx_bb_entrepreneur_merged &lt;- read_csv(&quot;https://raw.githubusercontent.com/jwroycechoi/broadband-entrepreneurship/master/Datasets/Broadband-Entrepreneurship-TX-merged.csv&quot;)</code></pre>
-<blockquote>
-<h3 id="broadband-and-entrepreneurship">Broadband and Entrepreneurship</h3>
-</blockquote>
+<div id="broadband-and-entrepreneurship" class="section level2">
+<h2>Broadband and Entrepreneurship</h2>
 <p>First, let’s take another look at the variables that I examined in the previous preliminary analysis.</p>
 <ul>
-<li>IRR2010: Rural index (larger = rural)</li>
-<li>proprietors_2017: # of sole proprietors in TX</li>
-<li>pct_proprietors_employment_2017: % of sole proprietors in total employment</li>
-<li>pct_broadband_FCC: FCC broadband availability in % (2017)</li>
-<li>pct_broadband_MS: MS broadband availability in % (2019)</li>
-<li>pctbbfrac_ASU: ACS broadband subscription measure used by the ASU white paper</li>
-<li>venturedensitydec19: Venture density by GoDaddy</li>
-<li>highlyactive_vddec19: Highly active venture density by GoDaddy</li>
-<li>prosperityindex2016: Prosperity index</li>
-<li>frac_BB.dec: % of M-Lab testers with over 25mbps of DL speed &amp; 3mbps of UL</li>
+<li><code>IRR2010</code>: Rural index (larger = rural)</li>
+<li><code>proprietors_2017</code>: # of sole proprietors in TX</li>
+<li><code>pct_proprietors_employment_2017</code>: % of sole proprietors in total employment</li>
+<li><code>pct_broadband_FCC</code>: FCC broadband availability in % (2017)</li>
+<li><code>pct_broadband_MS</code>: MS broadband availability in % (2019)</li>
+<li><code>pctbbfrac_ASU</code>: ACS broadband subscription measure used by the ASU white paper</li>
+<li><code>venturedensitydec19</code>: Venture density by GoDaddy</li>
+<li><code>highlyactive_vddec19</code>: Highly active venture density by GoDaddy</li>
+<li><code>prosperityindex2016</code>: Prosperity index</li>
+<li><code>frac_BB.dec</code>: % of M-Lab testers with over 25mbps of DL speed &amp; 3mbps of UL</li>
 </ul>
 <p>Since there are several venture density variables measured in different time periods, I will create an aggregate variable averaging the venture densities over the time period.</p>
 <pre class="r"><code>#### Create average aggregates of venture density ####
@@ -365,12 +364,13 @@ summary(tx_bb_entrepreneur_merged[c(&quot;venturedensity_mean&quot;, &quot;ventu
 <h4>Broadband’s Effect on Entrepreneurial Outcome</h4>
 <p>Here I investigate <strong>models that estimate broadband variables’ effect on the entrepreneurial outcome.</strong> Several different broadband measures are in the dataset. I will first model <strong>each measure’s relationship with the entrepreneurial outcome separately.</strong></p>
 <p>Entrepreneurial outcomes can be represented by several variables in this dataset. As the ASU research team’s white paper argued, the venture density provided by GoDaddy activities reflects actual entrepreneurial activities in the form of online domain creation. In the dataset, we also have Texas state’s sole proprietor statistics. These variables reflect small and medium sized businesses in each county.</p>
-<div id="control-variables" class="section level5">
-<h5>Control Variables</h5>
+</div>
+<div id="control-variables" class="section level4">
+<h4>Control Variables</h4>
 <p>For control variables, various demographic measures derived from the ACS estimates are available in the dataset. Furthermore, the ruralithy of the counties are reflected in the IRR index. Number of population, and regional intustry characteristics will be also included as control variables.</p>
-<blockquote>
-<h4 id="fcc-broadband-availability">FCC Broadband Availability</h4>
-</blockquote>
+</div>
+<div id="fcc-broadband-availability" class="section level3">
+<h3>FCC Broadband Availability</h3>
 <pre class="r"><code>#install.packages(&quot;lm.beta&quot;)
 library(lm.beta)
 #### Model 1 ####
@@ -2087,9 +2087,9 @@ F Statistic
 </td>
 </tr>
 </table>
-<blockquote>
-<h4 id="ms-broadband-availability">MS Broadband Availability</h4>
-</blockquote>
+</div>
+<div id="ms-broadband-availability" class="section level3">
+<h3>MS Broadband Availability</h3>
 <pre class="r"><code>#### Model 2 ####
 
 ## DV: Venture Density, Highly Active VD, Proprietors&#39; Share
@@ -3804,9 +3804,9 @@ F Statistic
 </td>
 </tr>
 </table>
-<blockquote>
-<h4 id="acs-broadband-subscription-level">ACS Broadband Subscription Level</h4>
-</blockquote>
+</div>
+<div id="acs-broadband-subscription-level" class="section level3">
+<h3>ACS Broadband Subscription Level</h3>
 <pre class="r"><code>#### Model 3 ####
 
 ## DV: Venture Density, Highly Active VD, Proprietors&#39; Share
@@ -5521,9 +5521,9 @@ F Statistic
 </td>
 </tr>
 </table>
-<blockquote>
-<h4 id="m-lab-broadband-availability">M-Lab Broadband Availability</h4>
-</blockquote>
+</div>
+<div id="m-lab-broadband-availability" class="section level3">
+<h3>M-Lab Broadband Availability</h3>
 <pre class="r"><code>#### Model 4 ####
 
 ## DV: Venture Density, Highly Active VD, Proprietors&#39; Share
@@ -7239,12 +7239,12 @@ F Statistic
 </tr>
 </table>
 </div>
-<div id="models-with-fewer-control-variables" class="section level5">
-<h5>Models with Fewer Control Variables</h5>
+</div>
+<div id="models-with-fewer-control-variables" class="section level2">
+<h2>Models with Fewer Control Variables</h2>
 <p>Below, simpler models with fewer, yet important control variables will be explored. In a previous meeting with Dr.Brian Whitacre, he suggested age and education might be meaningful control variables. Here I will use rurality index, population, education, and age cohort variables as control variables.</p>
-<blockquote>
-<h4 id="fcc-broadband-availability-1">FCC Broadband Availability</h4>
-</blockquote>
+<div id="fcc-broadband-availability-1" class="section level3">
+<h3>FCC Broadband Availability</h3>
 <pre class="r"><code>## Fewer Control Variables: Rurality, population, education level, age cohorts
 ## FCC Broadband
 # VD model
@@ -7631,9 +7631,9 @@ F Statistic
 </td>
 </tr>
 </table>
-<blockquote>
-<h4 id="ms-broadband-availability-1">MS Broadband Availability</h4>
-</blockquote>
+</div>
+<div id="ms-broadband-availability-1" class="section level3">
+<h3>MS Broadband Availability</h3>
 <pre class="r"><code>## MS Broadband
 # VD model
 model_ms_vd2 &lt;- lm(venturedensity_mean ~ pct_broadband_MS + IRR2010 + population + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
@@ -8019,9 +8019,9 @@ F Statistic
 </td>
 </tr>
 </table>
-<blockquote>
-<h4 id="acs-broadband-subscription-level-1">ACS Broadband Subscription Level</h4>
-</blockquote>
+</div>
+<div id="acs-broadband-subscription-level-1" class="section level3">
+<h3>ACS Broadband Subscription Level</h3>
 <pre class="r"><code>## ACS Broadband
 # VD model
 model_acs_vd2 &lt;- lm(venturedensity_mean ~ pctbbfrac_ASU + IRR2010 + population + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
@@ -8407,9 +8407,9 @@ F Statistic
 </td>
 </tr>
 </table>
-<blockquote>
-<h4 id="m-lab-broadband-availability-1">M-Lab Broadband Availability</h4>
-</blockquote>
+</div>
+<div id="m-lab-broadband-availability-1" class="section level3">
+<h3>M-Lab Broadband Availability</h3>
 <pre class="r"><code>## ACS Broadband
 # VD model
 model_mlab_vd2 &lt;- lm(venturedensity_mean ~ frac_BB.dec + IRR2010 + population + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
