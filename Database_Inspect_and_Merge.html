@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Jaewon Royce Choi" />
+
+
+<title>Database Inspect and Merge</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Broadband & Entrepreneurship</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">About</a>
+</li>
+<li>
+  <a href="Database_Inspect_and_Merge.html">Datasets</a>
+</li>
+<li>
+  <a href="Preliminary_Analysis.html">Preliminary Analysis</a>
+</li>
+<li>
+  <a href="Regression_Analyses.html">Regression Models</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Database Inspect and Merge</h1>
+<h4 class="author"><em>Jaewon Royce Choi</em></h4>
+<h4 class="date"><em>6/11/2020</em></h4>
+
+</div>
+
+
+<p>This document lays out the data handling process of multiple databases related to broadband availability, speed, and entrepreneurship of Texas. Databases used here are as follows:</p>
+<ul>
+<li>Microsoft Broadband Availability Dataset</li>
+<li>Measurement Lab (M-Lab) Datasets Exported via Google BigQuery</li>
+<li>GoDaddy Venture Density &amp; Demographic Dataset</li>
+<li>Texas Sole Proprietors Data</li>
+<li>IRR Rural Index</li>
+</ul>
+<p>In the following sections, I will import, clean, and set up the aforementioned datasets to be joined by <em>county</em>.</p>
+<p>Install and call packages used for the folloiwng process.</p>
+<pre class="r"><code>rm(list = ls())   ## Clear the workspace
+
+
+#install.packages(&quot;tidyverse&quot;)
+#install.packages(&quot;ggplot2&quot;)
+#install.packages(&quot;DBI&quot;)
+#devtools::install_github(&quot;rstats-db/bigrquery&quot;)
+library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.1.0     ✓ purrr   0.3.0
+## ✓ tibble  3.0.1     ✓ dplyr   0.8.3
+## ✓ tidyr   0.8.2     ✓ stringr 1.4.0
+## ✓ readr   1.3.1     ✓ forcats 0.4.0</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(ggplot2)
+library(DBI)</code></pre>
+<hr />
+<div id="microsoft-broadband-availability-dataset" class="section level2">
+<h2>Microsoft Broadband Availability Dataset</h2>
+<p>Microsoft dataset is available in its <a href="https://github.com/microsoft/USBroadbandUsagePercentages">GitHub repository</a>. Therefore, we will directly import its dataset from the URL.</p>
+<p>Note that the percentage variables are imported as factors. We need them to be in the form of integers. Converting factors directly to numeric vectors using <code>as.numeric()</code> would result in loss of information. Following the methods suggested <a href="https://stackoverflow.com/a/3418192/11199930">here</a>, the code below converts <code>BROADBAND.AVAILABILITY.PER.FCC</code> and <code>BROADBAND.USAGE</code> to numeric values.</p>
+<pre class="r"><code>## Create new variabes in numeric form
+ms_broadband &lt;- ms_broadband %&gt;% 
+  mutate(pct_broadband_FCC = as.numeric(levels(BROADBAND.AVAILABILITY.PER.FCC))[BROADBAND.AVAILABILITY.PER.FCC],
+         pct_broadband_MS = as.numeric(levels(BROADBAND.USAGE))[BROADBAND.USAGE])
+
+## Confirm the change
+str(ms_broadband)</code></pre>
+<p>Next step is to filter out information on the states other than Texas</p>
+<pre class="r"><code>## Filtering TX
+ms_broadband_tx &lt;- ms_broadband %&gt;% 
+  filter(ST == &quot;TX&quot;) %&gt;% droplevels() # Deletes unused levels in factor variables in a dataset
+
+## Inspect the result
+str(ms_broadband_tx)</code></pre>
+</div>
+<div id="godaddy-dataset" class="section level2">
+<h2>GoDaddy Dataset</h2>
+<p>The GoDaddy dataset has been used by researchers (Mossberger, Tolbert, &amp; LaCombe, 2020) for studying local entrepreneurship represented by actual adoption and usage of the Internet. The dataset includes venture density variables in various time frames. Furthermore, the dataset includes numbers of important demographic/economic factors derived from the American Community Survey estimates.</p>
+<p>In the following section, I will import, inspect and set up the dataset for further join with other databases.</p>
+<pre class="r"><code>## Import the Dataset
+godaddy_cbsa &lt;- read.csv(&quot;https://raw.githubusercontent.com/jwroycechoi/broadband-entrepreneurship/master/Datasets/GoDaddy_CBSA.csv&quot;, header = T)    # GoDaddy dataset at the unit of Core Based Statistical Area (CBSA) defined by U.S. Department of Housing and Urban Development
+godaddy_county &lt;- read.csv(&quot;https://raw.githubusercontent.com/jwroycechoi/broadband-entrepreneurship/master/Datasets/GoDaddy_County.csv&quot;, header = T)    # GoDaddy dataset at the county level
+
+## Inspect Structure
+str(godaddy_cbsa)
+str(godaddy_county)</code></pre>
+<p>The GoDaddy dataset also has to be filtered to include only Texas data. Since we are at the moment only interested in county level information, the filtering will only be conducted to the county level dataset. The county level dataset has a variable named <code>cfips</code>, which is a FIPS code. FIPS code idnetifies Texas by the <a href="https://www.dshs.texas.gov/chs/info/info_txco.shtm">first two digit: ‘48’</a>.</p>
+<pre class="r"><code>## Filtering Texas using FIPS code
+str(godaddy_county)
+
+godaddy_county_tx &lt;- godaddy_county %&gt;% 
+  filter(startsWith(as.character(cfips), &quot;48&quot;)) %&gt;% # Filter Texas
+  mutate(population = as.numeric(gsub(&quot;,&quot;,&quot;&quot;,as.character(population)))) %&gt;% # Convert population from factor to numeric
+  separate(county, into = c(&quot;county&quot;, &quot;state&quot;), sep = &quot;, &quot;, remove = T) %&gt;% # Separate county variable which had state and county data at the same time
+  droplevels()  # Drop unused levels from factor variables
+
+## Inspect Structure
+str(godaddy_county_tx)</code></pre>
+</div>
+<div id="m-lab-datasets" class="section level2">
+<h2>M-Lab Datasets</h2>
+<p>Measurement Lab (M-Lab) datasets consists of user reported download (DL) and upload (UL) speed by geographical information. The easiest way to access and retrieve data from the database is by making queries via Google BigQuery platform using Standard SQL statements. You can find more about datasets available from M-Lab and overview <a href="https://www.measurementlab.net/data/">here</a>. Currently M-Lab suggests using the <em>Unified View</em> dataset to researchers. The datasets from the following time frames are retrieved through BigQuery using SQL statements shared by M-Lab team modified to match the time frames. The SQL queries and an overview of the methods of calculating median speeds are available <a href="https://datastudio.google.com/u/0/reporting/1djtGEuqV4Qwrj26GQTN_xzp3rsMYYcmv/page/s0CPB?s=rzD5rHYkLT4">here</a>. I made some simple modifications calculating the proportion of people who have recorded median speed of 25Mbps download/3Mbps upload in a given time period, which would align better with FCC’s broadband definition. The actual query used is available <a href="https://github.com/jwroycechoi/broadband-entrepreneurship/blob/master/Codes/25-3-BB-Query.sql">here</a>.</p>
+<ul>
+<li>September 2019</li>
+<li>October 2019</li>
+<li>November 2019</li>
+<li>December 2019</li>
+</ul>
+<p>These time frames are initially selected because it matches the ones provided in the GoDaddy dataset. GoDaddy dataset provides venture density information in several time frame. While there are several time frames in 2018, the intervals are inconsistent. Since the time frames of 2019 are equally distanced (i.e., monthly) from September to December, this time frame was initially selected for M-Lab data retrieval.</p>
+<p>In this section, I will import the retrieved M-Lab datasets and clean them.</p>
+<pre class="r"><code>## Import the Dataset
+mlab_sept &lt;- read.csv(&quot;https://raw.githubusercontent.com/jwroycechoi/broadband-entrepreneurship/master/Datasets/Mlab_State_All_Sept_2019_2.csv&quot;, header = T)
+mlab_oct &lt;- read.csv(&quot;https://raw.githubusercontent.com/jwroycechoi/broadband-entrepreneurship/master/Datasets/Mlab_State_All_Oct_2019_2.csv&quot;, header = T)
+mlab_nov &lt;- read.csv(&quot;https://raw.githubusercontent.com/jwroycechoi/broadband-entrepreneurship/master/Datasets/Mlab_State_All_Nov_2019_2.csv&quot;, header = T)
+mlab_dec &lt;- read.csv(&quot;https://raw.githubusercontent.com/jwroycechoi/broadband-entrepreneurship/master/Datasets/Mlab_State_All_Dec_2019_2.csv&quot;, header = T)
+
+## Inspect Structure
+str(mlab_sept)
+str(mlab_oct)
+str(mlab_nov)
+str(mlab_dec)
+
+#### Cleaning and Filtering the Dataset ####
+## September 2019 ##
+mlab_sept_tx &lt;- mlab_sept %&gt;% 
+  filter(state == &quot;TX&quot;) %&gt;% 
+  select(-c(&quot;BB_state&quot;,&quot;BB_county_name&quot;,&quot;DLmed_state&quot;,&quot;DLmed_county_name&quot;,&quot;ULmed_state&quot;,&quot;ULmed_county_name&quot;,&quot;ul_sample_state&quot;,&quot;ul_sample_county_name&quot;,&quot;dl_sample_state&quot;,&quot;dl_sample_county_name&quot;)) %&gt;% 
+  mutate(county = paste(as.character(county_name), &quot;County&quot;, sep = &quot; &quot;),
+         frac_over_25DL = 1 - frac_under_25mbpsDL) %&gt;% 
+  droplevels()
+
+## October 2019 ##
+mlab_oct_tx &lt;- mlab_oct %&gt;% 
+  filter(state == &quot;TX&quot;) %&gt;% 
+  select(-c(&quot;BB_state&quot;,&quot;BB_county_name&quot;,&quot;DLmed_state&quot;,&quot;DLmed_county_name&quot;,&quot;ULmed_state&quot;,&quot;ULmed_county_name&quot;,&quot;ul_sample_state&quot;,&quot;ul_sample_county_name&quot;,&quot;dl_sample_state&quot;,&quot;dl_sample_county_name&quot;)) %&gt;% 
+  mutate(county = paste(as.character(county_name), &quot;County&quot;, sep = &quot; &quot;),
+         frac_over_25DL = 1 - frac_under_25mbpsDL) %&gt;% 
+  droplevels()
+
+## November 2019 ##
+mlab_nov_tx &lt;- mlab_nov %&gt;% 
+  filter(state == &quot;TX&quot;) %&gt;% 
+  select(-c(&quot;BB_state&quot;,&quot;BB_county_name&quot;,&quot;DLmed_state&quot;,&quot;DLmed_county_name&quot;,&quot;ULmed_state&quot;,&quot;ULmed_county_name&quot;,&quot;ul_sample_state&quot;,&quot;ul_sample_county_name&quot;,&quot;dl_sample_state&quot;,&quot;dl_sample_county_name&quot;)) %&gt;% 
+  mutate(county = paste(as.character(county_name), &quot;County&quot;, sep = &quot; &quot;),
+         frac_over_25DL = 1 - frac_under_25mbpsDL) %&gt;% 
+  droplevels()
+
+## December 2019 ##
+mlab_dec_tx &lt;- mlab_dec %&gt;% 
+  filter(state == &quot;TX&quot;) %&gt;% 
+  select(-c(&quot;BB_state&quot;,&quot;BB_county_name&quot;,&quot;DLmed_state&quot;,&quot;DLmed_county_name&quot;,&quot;ULmed_state&quot;,&quot;ULmed_county_name&quot;,&quot;ul_sample_state&quot;,&quot;ul_sample_county_name&quot;,&quot;dl_sample_state&quot;,&quot;dl_sample_county_name&quot;)) %&gt;% 
+  mutate(county = paste(as.character(county_name), &quot;County&quot;, sep = &quot; &quot;),
+         frac_over_25DL = 1 - frac_under_25mbpsDL) %&gt;% 
+  droplevels()</code></pre>
+</div>
+<div id="texas-sole-proprietors-dataset" class="section level2">
+<h2>Texas Sole Proprietors Dataset</h2>
+<p>This dataset contains information of sole proprietors number provided by the Bureau of Business Research at <span class="math inline">\(IC^{2}\)</span> Institute. The information is presented at the county level.</p>
+<pre class="r"><code>## Import the Dataset
+tx_proprietor &lt;- read_csv(&quot;https://raw.githubusercontent.com/jwroycechoi/broadband-entrepreneurship/master/Datasets/Sole-Proprietors-tx-combined.csv&quot;)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   county = col_character(),
+##   pct_change_proprietors_2000_2017 = col_double(),
+##   proprietors_2000 = col_double(),
+##   proprietors_2017 = col_double(),
+##   pct_proprietors_employment_2000 = col_double(),
+##   pct_proprietors_employment_2010 = col_double(),
+##   pct_proprietors_employment_2017 = col_double(),
+##   total_employment_2017 = col_double(),
+##   wage_salary_jobs_2017 = col_double(),
+##   pct_change_pro_emp_2000_2017 = col_double(),
+##   pct_change_pro_emp_2010_2017 = col_double()
+## )</code></pre>
+<pre class="r"><code>## Inspect the Structure
+str(tx_proprietor)</code></pre>
+<p>This dataset’s variables are straighforward as it was pre-cleaned on Excel spreadsheet.</p>
+</div>
+<div id="irr-rural-index" class="section level2">
+<h2>IRR Rural Index</h2>
+<p>This dataset contains information of IRR index at the county level. The index calculates the extent to which a certain county could be considered as <em>‘rural’</em>. Smaller the value of the index, more rural the county is considered to be.</p>
+<p>There are two datasets that contains data from 2000 and 2010. I will import these datasets, filter for Texas and set up for a final merge of all datasets we have.</p>
+<pre class="r"><code>## Import the Dataset
+rural_2000 &lt;- read_csv(&quot;https://raw.githubusercontent.com/jwroycechoi/broadband-entrepreneurship/master/Datasets/IRR-rural-2000.csv&quot;)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   FIPS2000 = col_double(),
+##   `County Name` = col_character(),
+##   IRR2000 = col_double()
+## )</code></pre>
+<pre class="r"><code>rural_2010 &lt;- read_csv(&quot;https://raw.githubusercontent.com/jwroycechoi/broadband-entrepreneurship/master/Datasets/IRR-rural-2010.csv&quot;)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   FIPS2010 = col_double(),
+##   `County Name` = col_character(),
+##   IRR2010 = col_double()
+## )</code></pre>
+<pre class="r"><code>## Inspect Structure
+str(rural_2000)
+str(rural_2010)
+
+#### Clean the Datasets ####
+## Filter Texas counties using FIPS code ##
+
+rural_2000_tx &lt;- rural_2000 %&gt;% 
+  filter(startsWith(as.character(FIPS2000), &quot;48&quot;)) %&gt;% 
+  separate(`County Name`, into = c(&quot;county&quot;, &quot;state&quot;), sep = &quot;, &quot;, remove = T)
+
+rural_2010_tx &lt;- rural_2010 %&gt;% 
+  filter(startsWith(as.character(FIPS2010), &quot;48&quot;)) %&gt;% 
+  separate(`County Name`, into = c(&quot;county&quot;, &quot;state&quot;), sep = &quot;, &quot;, remove = T)
+
+## Inspect Structure
+str(rural_2000_tx)
+str(rural_2010_tx)</code></pre>
+</div>
+<div id="merge-into-single-dataset-at-the-county-level" class="section level2">
+<h2>Merge into Single Dataset at the County Level</h2>
+<p>In this section, I will join all the datasets I have cleand and processed above into a single dataset containing all the information at the county level rows. The names of the datasets created from the process above are as follows</p>
+<ul>
+<li><code>ms_broadband_tx</code></li>
+<li><code>godaddy_county_tx</code></li>
+<li><code>mlab_sept_tx</code>; <code>mlab_oct_tx</code>; <code>mlab_nov_tx</code>; <code>mlab_dec_tx</code></li>
+<li><code>tx_proprietor</code></li>
+<li><code>rural_2000_tx</code>; <code>rural_2010_tx</code></li>
+</ul>
+<p>I will first inspect the datasets quickly to see if row counts of all datasets are matched since it is possible some of them (especially M-Lab datasets) have less/missing observations. Afterwards, I’ll join the datasets into one.</p>
+<pre class="r"><code>#### Inspect the Number of Observations ####
+knitr::kable(tibble(MS = count(ms_broadband_tx)$n, godaddy = count(godaddy_county_tx)$n,
+       mlabsept = count(mlab_sept_tx)$n, mlaboct = count(mlab_oct_tx)$n, mlabnov = count(mlab_nov_tx)$n, mlabdec = count(mlab_dec_tx)$n,
+       txprop = count(tx_proprietor)$n, irr2000 = count(rural_2000_tx)$n, irr2010 = count(rural_2010_tx)$n))</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">MS</th>
+<th align="right">godaddy</th>
+<th align="right">mlabsept</th>
+<th align="right">mlaboct</th>
+<th align="right">mlabnov</th>
+<th align="right">mlabdec</th>
+<th align="right">txprop</th>
+<th align="right">irr2000</th>
+<th align="right">irr2010</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">254</td>
+<td align="right">253</td>
+<td align="right">245</td>
+<td align="right">247</td>
+<td align="right">247</td>
+<td align="right">249</td>
+<td align="right">254</td>
+<td align="right">254</td>
+<td align="right">254</td>
+</tr>
+</tbody>
+</table>
+<p>Several missing observation from M-Lab datasets and one missing from GoDaddy dataset here. Therefore, it is critical that these datasets are not used as a reference dataset for joining. Folloiwng code chunk will use <code>join</code> functions of <code>dplyr</code>.</p>
+<pre class="r"><code>#### Join the Datasets ####
+
+str(ms_broadband_tx)
+str(godaddy_county_tx)
+str(mlab_dec_tx)
+str(tx_proprietor)
+str(rural_2000_tx)
+
+## The variables to match from each datasets are
+## ms_broadband_tx$COUNTY.ID          Integer
+## ms_broadband_tx$COUNTY.NAME        Factor    (&quot;____ County&quot;)
+## godaddy_county_tx$cfips            Integer
+## godaddy_county_tx$county           Character (&quot;____ County&quot;)
+## mlab datasets$county               Character (&quot;____ County&quot;)
+## tx_proprietor$county               Character (&quot;____ County&quot;)
+## rural datasets#county              Character (&quot;____ County&quot;)
+
+## Create a character vector for ms_broadband_tx dataset to minimize potential error beforehand
+ms_broadband_tx &lt;- ms_broadband_tx %&gt;% mutate(county = as.character(COUNTY.NAME))
+str(ms_broadband_tx)
+
+## Nested left_joins on IRR dataset
+names(mlab_sept_tx) &lt;- paste(names(mlab_sept_tx), &quot;.sept&quot;, sep = &quot;&quot;)
+names(mlab_oct_tx) &lt;- paste(names(mlab_oct_tx), &quot;.oct&quot;, sep = &quot;&quot;)
+names(mlab_nov_tx) &lt;- paste(names(mlab_nov_tx), &quot;.nov&quot;, sep = &quot;&quot;)
+names(mlab_dec_tx) &lt;- paste(names(mlab_dec_tx), &quot;.dec&quot;, sep = &quot;&quot;)
+
+tx_bb_entrepreneur_merged &lt;- left_join(rural_2000_tx, rural_2010_tx, by = &quot;county&quot;) %&gt;% 
+  left_join(., tx_proprietor, by = &quot;county&quot;) %&gt;% 
+  left_join(., ms_broadband_tx, by = &quot;county&quot;) %&gt;% 
+  left_join(., godaddy_county_tx, by = &quot;county&quot;) %&gt;% 
+  left_join(., mlab_sept_tx, by = c(&quot;county&quot; = &quot;county.sept&quot;)) %&gt;% 
+  left_join(., mlab_oct_tx, by = c(&quot;county&quot; = &quot;county.oct&quot;)) %&gt;% 
+  left_join(., mlab_nov_tx, by = c(&quot;county&quot; = &quot;county.nov&quot;)) %&gt;% 
+  left_join(., mlab_dec_tx, by = c(&quot;county&quot; = &quot;county.dec&quot;))
+
+str(tx_bb_entrepreneur_merged)
+
+knitr::kable(head(tx_bb_entrepreneur_merged, 20))
+
+## Drop columns with duplicate information
+
+str(tx_bb_entrepreneur_merged)
+tx_bb_entrepreneur_merged &lt;- tx_bb_entrepreneur_merged %&gt;% 
+  rename(FIPS = FIPS2000) %&gt;% 
+  select(-c(&quot;FIPS2010&quot;,&quot;state.x&quot;,&quot;state.y&quot;,&quot;ST&quot;,&quot;COUNTY.ID&quot;,&quot;COUNTY.NAME&quot;,&quot;BROADBAND.AVAILABILITY.PER.FCC&quot;,&quot;BROADBAND.USAGE&quot;,
+            &quot;cfips&quot;,&quot;state.sept&quot;,&quot;county_name.sept&quot;,&quot;state.oct&quot;,&quot;county_name.oct&quot;,&quot;state.nov&quot;,&quot;county_name.nov&quot;,&quot;state.dec&quot;,
+            &quot;county_name.dec&quot;))
+
+tx_bb_entrepreneur_merged &lt;- tx_bb_entrepreneur_merged %&gt;%  # Converting ASU percentage numbers into fraction
+  mutate(pctbbfrac_ASU = pctbroadband/100,
+         pctbbfrac_poor_ASU = pctbroadband_poorpeople/100)
+
+## Export the dataset into csv
+
+write_csv(tx_bb_entrepreneur_merged, &quot;Broadband-Entrepreneurship-TX-merged.csv&quot;)</code></pre>
+</div>
+
+<p>Copyright &copy; 2020 Jaewon Royce Choi, TIPI. All rights reserved.</p>
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
