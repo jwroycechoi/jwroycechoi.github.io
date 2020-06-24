@@ -1,0 +1,18 @@
+name: "broadband-entrepreneurship"
+navbar:
+  title: "Broadband & Entrepreneurship"
+  left:
+    - text: "About"
+      href: index.html
+    - text: "Datasets"
+      href: Database_Inspect_and_Merge.html
+    - text: "Preliminary Analysis"
+      href: Preliminary_Analysis.html
+    - text: "Regression Models"
+      href: Regression_Analyses.html
+output:
+  html_document:
+    theme: cosmo
+    highlight: textmate
+    include:
+      after_body: footer.html

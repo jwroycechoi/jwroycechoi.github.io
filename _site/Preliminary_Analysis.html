@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Jaewon Royce Choi" />
+
+
+<title>Preliminary Analysis</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Broadband & Entrepreneurship</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">About</a>
+</li>
+<li>
+  <a href="Database_Inspect_and_Merge.html">Datasets</a>
+</li>
+<li>
+  <a href="Preliminary_Analysis.html">Preliminary Analysis</a>
+</li>
+<li>
+  <a href="Regression_Analyses.html">Regression Models</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Preliminary Analysis</h1>
+<h4 class="author"><em>Jaewon Royce Choi</em></h4>
+<h4 class="date"><em>6/15/2020</em></h4>
+
+</div>
+
+
+<p>Preliminary statistical analysis of relationships between the variables.</p>
+<pre class="r"><code>library(tidyverse)
+library(ggplot2)
+library(gridExtra)
+
+#### Read in the dataset ####
+
+tx_bb_entrepreneur_merged &lt;- read_csv(&quot;https://raw.githubusercontent.com/jwroycechoi/broadband-entrepreneurship/master/Datasets/Broadband-Entrepreneurship-TX-merged.csv&quot;)
+
+str(tx_bb_entrepreneur_merged)</code></pre>
+<blockquote>
+<h3 id="correlation-matrix-for-preliminary-set-of-variables">Correlation Matrix for Preliminary Set of Variables</h3>
+</blockquote>
+<p>Basic correlation matrix with some preliminary variables.</p>
+<ul>
+<li>IRR2010: Rural index (larger = rural)</li>
+<li>proprietors_2017: # of sole proprietors in TX</li>
+<li>pct_proprietors_employment_2017: % of sole proprietors in total employment</li>
+<li>pct_broadband_FCC: FCC broadband availability in % (2017)</li>
+<li>pct_broadband_MS: MS broadband availability in % (2019)</li>
+<li>venturedensitydec19: Venture density by GoDaddy</li>
+<li>highlyactive_vddec19: Highly active venture density by GoDaddy</li>
+<li>prosperityindex2016: Prosperity index</li>
+<li>frac_BB.dec: % of M-Lab testers with over 25mbps of DL speed &amp; 3mbps of UL</li>
+</ul>
+<pre class="r"><code>#### Correlation between variabes ####
+
+## Basic Correlation Table ##
+
+tx_bb_entrepreneur_merged %&gt;% 
+  select(IRR2010, proprietors_2017, pct_proprietors_employment_2017, pct_broadband_FCC, pct_broadband_MS,
+         venturedensitydec19, highlyactive_vddec19, prosperityindex2016, frac_BB.dec) %&gt;% 
+  cor(method = &quot;pearson&quot;, use = &quot;complete.obs&quot;) %&gt;% knitr::kable(format = &quot;markdown&quot;, digits = 3)</code></pre>
+<table style="width:100%;">
+<colgroup>
+<col width="16%" />
+<col width="4%" />
+<col width="8%" />
+<col width="16%" />
+<col width="9%" />
+<col width="8%" />
+<col width="10%" />
+<col width="10%" />
+<col width="10%" />
+<col width="6%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">IRR2010</th>
+<th align="right">proprietors_2017</th>
+<th align="right">pct_proprietors_employment_2017</th>
+<th align="right">pct_broadband_FCC</th>
+<th align="right">pct_broadband_MS</th>
+<th align="right">venturedensitydec19</th>
+<th align="right">highlyactive_vddec19</th>
+<th align="right">prosperityindex2016</th>
+<th align="right">frac_BB.dec</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">IRR2010</td>
+<td align="right">1.000</td>
+<td align="right">-0.696</td>
+<td align="right">0.471</td>
+<td align="right">-0.440</td>
+<td align="right">-0.739</td>
+<td align="right">-0.443</td>
+<td align="right">-0.378</td>
+<td align="right">-0.413</td>
+<td align="right">-0.519</td>
+</tr>
+<tr class="even">
+<td align="left">proprietors_2017</td>
+<td align="right">-0.696</td>
+<td align="right">1.000</td>
+<td align="right">-0.226</td>
+<td align="right">0.227</td>
+<td align="right">0.465</td>
+<td align="right">0.363</td>
+<td align="right">0.315</td>
+<td align="right">0.281</td>
+<td align="right">0.278</td>
+</tr>
+<tr class="odd">
+<td align="left">pct_proprietors_employment_2017</td>
+<td align="right">0.471</td>
+<td align="right">-0.226</td>
+<td align="right">1.000</td>
+<td align="right">-0.318</td>
+<td align="right">-0.361</td>
+<td align="right">0.053</td>
+<td align="right">0.194</td>
+<td align="right">-0.001</td>
+<td align="right">-0.234</td>
+</tr>
+<tr class="even">
+<td align="left">pct_broadband_FCC</td>
+<td align="right">-0.440</td>
+<td align="right">0.227</td>
+<td align="right">-0.318</td>
+<td align="right">1.000</td>
+<td align="right">0.535</td>
+<td align="right">0.183</td>
+<td align="right">0.080</td>
+<td align="right">0.266</td>
+<td align="right">0.453</td>
+</tr>
+<tr class="odd">
+<td align="left">pct_broadband_MS</td>
+<td align="right">-0.739</td>
+<td align="right">0.465</td>
+<td align="right">-0.361</td>
+<td align="right">0.535</td>
+<td align="right">1.000</td>
+<td align="right">0.541</td>
+<td align="right">0.482</td>
+<td align="right">0.610</td>
+<td align="right">0.687</td>
+</tr>
+<tr class="even">
+<td align="left">venturedensitydec19</td>
+<td align="right">-0.443</td>
+<td align="right">0.363</td>
+<td align="right">0.053</td>
+<td align="right">0.183</td>
+<td align="right">0.541</td>
+<td align="right">1.000</td>
+<td align="right">0.790</td>
+<td align="right">0.533</td>
+<td align="right">0.270</td>
+</tr>
+<tr class="odd">
+<td align="left">highlyactive_vddec19</td>
+<td align="right">-0.378</td>
+<td align="right">0.315</td>
+<td align="right">0.194</td>
+<td align="right">0.080</td>
+<td align="right">0.482</td>
+<td align="right">0.790</td>
+<td align="right">1.000</td>
+<td align="right">0.540</td>
+<td align="right">0.242</td>
+</tr>
+<tr class="even">
+<td align="left">prosperityindex2016</td>
+<td align="right">-0.413</td>
+<td align="right">0.281</td>
+<td align="right">-0.001</td>
+<td align="right">0.266</td>
+<td align="right">0.610</td>
+<td align="right">0.533</td>
+<td align="right">0.540</td>
+<td align="right">1.000</td>
+<td align="right">0.293</td>
+</tr>
+<tr class="odd">
+<td align="left">frac_BB.dec</td>
+<td align="right">-0.519</td>
+<td align="right">0.278</td>
+<td align="right">-0.234</td>
+<td align="right">0.453</td>
+<td align="right">0.687</td>
+<td align="right">0.270</td>
+<td align="right">0.242</td>
+<td align="right">0.293</td>
+<td align="right">1.000</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<h3 id="correlation-matrix-with-more-information">Correlation Matrix with more Information</h3>
+</blockquote>
+<p>A correlation matrix with more in-depth information using the <code>chart.Correlation()</code> function in package <code>PerformanceAnalytics</code>.</p>
+<pre class="r"><code>#install.packages(&quot;PerformanceAnalytics&quot;)
+
+tx_bb_entrepreneur_merged %&gt;% 
+  select(IRR2010, proprietors_2017, pct_proprietors_employment_2017, pct_broadband_FCC, pct_broadband_MS,
+         venturedensitydec19, highlyactive_vddec19, prosperityindex2016, frac_BB.dec) %&gt;%
+  PerformanceAnalytics::chart.Correlation(histogram = T)</code></pre>
+<p><img src="Preliminary_Analysis_files/figure-html/Correlation%20Matrix-1.png" width="672" style="display: block; margin: auto;" /></p>
+<blockquote>
+<h3 id="preliminary-exploration-of-relationships-further-with-regressions">Preliminary Exploration of Relationships further with Regressions</h3>
+</blockquote>
+<p>Few models to examine relationships between <strong>entrepreneurship</strong> and <strong>broadband</strong>. In general, I take the entrepreneurship measures as the dependent variable and others as the independent. Following the ASU white paper analysis, venture density is explored as a measure of entrepreneurial activities online. Sole proprietors share in total employment is taken into IV as it represents general small-mid sized business activities, but not all of them are active online as reflected in the venture density factor.</p>
+<pre class="r"><code>#### Exploring the relationships further with regressions ####
+
+## DV: Venture Density as Entrepreneurship Index
+## IV: Rural index, Proprietors share in employment, Broadband (FCC), Broadband (MS), Broadband (M-Lab), Broadband Subscription
+#install.packages(&quot;stargazer&quot;)
+library(stargazer)
+
+prem_model &lt;- lm(venturedensitydec19 ~ IRR2010 + pct_proprietors_employment_2017 + pct_broadband_FCC + pct_broadband_MS + frac_BB.dec + pctbbfrac_ASU, data = tx_bb_entrepreneur_merged)
+
+## DV: Highly active venture density
+
+prem_model2 &lt;- lm(highlyactive_vddec19 ~ IRR2010 + pct_proprietors_employment_2017 + pct_broadband_FCC + pct_broadband_MS + frac_BB.dec + pctbbfrac_ASU, data = tx_bb_entrepreneur_merged)
+
+## DV: Proprietor&#39;s share in employment as an indicator of entrepreneurship
+
+prem_model3 &lt;- lm(pct_proprietors_employment_2017 ~ IRR2010 + pct_broadband_FCC + pct_broadband_MS + frac_BB.dec + pctbbfrac_ASU, data = tx_bb_entrepreneur_merged)</code></pre>
+<table style="text-align:center">
+<caption>
+<strong>Preliminary Regression Modeling</strong>
+</caption>
+<tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td colspan="3">
+<em>Dependent variable:</em>
+</td>
+</tr>
+<tr>
+<td>
+</td>
+<td colspan="3" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+Venture Density
+</td>
+<td>
+Highly Active VD
+</td>
+<td>
+Proprietors Share
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(1)
+</td>
+<td>
+(2)
+</td>
+<td>
+(3)
+</td>
+</tr>
+<tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Rurality Index (2010)
+</td>
+<td>
+-4.761<sup>**</sup>
+</td>
+<td>
+-1.319<sup>***</sup>
+</td>
+<td>
+0.553<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(1.877)
+</td>
+<td>
+(0.423)
+</td>
+<td>
+(0.100)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Proprietors Share (2017)
+</td>
+<td>
+5.727<sup>***</sup>
+</td>
+<td>
+2.001<sup>***</sup>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(1.183)
+</td>
+<td>
+(0.267)
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Broadband (FCC)
+</td>
+<td>
+-0.698
+</td>
+<td>
+-0.293<sup>***</sup>
+</td>
+<td>
+-0.059<sup>**</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(0.456)
+</td>
+<td>
+(0.103)
+</td>
+<td>
+(0.026)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Broadband (MS)
+</td>
+<td>
+5.998<sup>***</sup>
+</td>
+<td>
+1.494<sup>***</sup>
+</td>
+<td>
+-0.077
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(1.113)
+</td>
+<td>
+(0.251)
+</td>
+<td>
+(0.063)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Broadband (M-Lab)
+</td>
+<td>
+-2.579<sup>***</sup>
+</td>
+<td>
+-0.489<sup>**</sup>
+</td>
+<td>
+0.037
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(0.924)
+</td>
+<td>
+(0.208)
+</td>
+<td>
+(0.053)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Broadband Subscription (ACS)
+</td>
+<td>
+5.608<sup>***</sup>
+</td>
+<td>
+0.758<sup>**</sup>
+</td>
+<td>
+0.297<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(1.500)
+</td>
+<td>
+(0.338)
+</td>
+<td>
+(0.083)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Constant
+</td>
+<td>
+-0.874
+</td>
+<td>
+0.068
+</td>
+<td>
+-0.089
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(1.505)
+</td>
+<td>
+(0.339)
+</td>
+<td>
+(0.086)
+</td>
+</tr>
+<tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Observations
+</td>
+<td>
+226
+</td>
+<td>
+226
+</td>
+<td>
+226
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+R<sup>2</sup>
+</td>
+<td>
+0.451
+</td>
+<td>
+0.466
+</td>
+<td>
+0.281
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Adjusted R<sup>2</sup>
+</td>
+<td>
+0.436
+</td>
+<td>
+0.452
+</td>
+<td>
+0.265
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+F Statistic
+</td>
+<td>
+30.028<sup>***</sup> (df = 6; 219)
+</td>
+<td>
+31.881<sup>***</sup> (df = 6; 219)
+</td>
+<td>
+17.205<sup>***</sup> (df = 5; 220)
+</td>
+</tr>
+<tr>
+<td colspan="4" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+<em>Note:</em>
+</td>
+<td colspan="3" style="text-align:right">
+<sup><em></sup>p&lt;0.1; <sup><strong></sup>p&lt;0.05; <sup></strong></em></sup>p&lt;0.01
+</td>
+</tr>
+</table>
+<blockquote>
+<h3 id="comaparing-different-broadband-measures">Comaparing Different Broadband Measures</h3>
+</blockquote>
+<p>Preliminary explorations reveal interesting discrepancies between different measures of broadband. Here I will explore how these measures paint different pictures of broadband of Texas.</p>
+<pre class="r"><code>#### Comparing Broadband Measures in the Dataset ####
+
+## Broadband measures
+## pct_broadband_FCC: FCC&#39;s broadband availability (reported by the service providers)
+## pct_broadband_MS: MS&#39;s broadband availability (reported by the MS software service users)
+## frac_BB.dec: Broadband speed users&#39; share based on M-Lab data (reported by the M-Lab test respondents)
+## pctbbfrac_ASU: ASU team&#39;s measure derived from the ACS survey estimates (based on reported BB subscription info from respondents)
+
+## Summarize some key statistics of all these broadband variables
+
+# Some basic statistics
+tx_bb_entrepreneur_merged %&gt;% 
+  select(c(&quot;pct_broadband_FCC&quot;, &quot;pct_broadband_MS&quot;, &quot;frac_BB.dec&quot;, &quot;pctbbfrac_ASU&quot;)) %&gt;% 
+  psych::describe() %&gt;% knitr::kable(digits = 3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">vars</th>
+<th align="right">n</th>
+<th align="right">mean</th>
+<th align="right">sd</th>
+<th align="right">median</th>
+<th align="right">trimmed</th>
+<th align="right">mad</th>
+<th align="right">min</th>
+<th align="right">max</th>
+<th align="right">range</th>
+<th align="right">skew</th>
+<th align="right">kurtosis</th>
+<th align="right">se</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>pct_broadband_FCC</td>
+<td align="right">1</td>
+<td align="right">248</td>
+<td align="right">0.702</td>
+<td align="right">0.287</td>
+<td align="right">0.775</td>
+<td align="right">0.738</td>
+<td align="right">0.289</td>
+<td align="right">0.000</td>
+<td align="right">1.000</td>
+<td align="right">1.000</td>
+<td align="right">-0.821</td>
+<td align="right">-0.391</td>
+<td align="right">0.018</td>
+</tr>
+<tr class="even">
+<td>pct_broadband_MS</td>
+<td align="right">2</td>
+<td align="right">254</td>
+<td align="right">0.223</td>
+<td align="right">0.185</td>
+<td align="right">0.165</td>
+<td align="right">0.194</td>
+<td align="right">0.141</td>
+<td align="right">0.010</td>
+<td align="right">1.000</td>
+<td align="right">0.990</td>
+<td align="right">1.484</td>
+<td align="right">2.232</td>
+<td align="right">0.012</td>
+</tr>
+<tr class="odd">
+<td>frac_BB.dec</td>
+<td align="right">3</td>
+<td align="right">249</td>
+<td align="right">0.247</td>
+<td align="right">0.160</td>
+<td align="right">0.241</td>
+<td align="right">0.243</td>
+<td align="right">0.200</td>
+<td align="right">0.000</td>
+<td align="right">0.741</td>
+<td align="right">0.741</td>
+<td align="right">0.258</td>
+<td align="right">-0.654</td>
+<td align="right">0.010</td>
+</tr>
+<tr class="even">
+<td>pctbbfrac_ASU</td>
+<td align="right">4</td>
+<td align="right">232</td>
+<td align="right">0.672</td>
+<td align="right">0.093</td>
+<td align="right">0.675</td>
+<td align="right">0.672</td>
+<td align="right">0.086</td>
+<td align="right">0.426</td>
+<td align="right">0.908</td>
+<td align="right">0.482</td>
+<td align="right">-0.048</td>
+<td align="right">0.023</td>
+<td align="right">0.006</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># Who are the counties with minimum BB?
+
+# According to FCC BB data
+tx_bb_entrepreneur_merged[which(tx_bb_entrepreneur_merged$pct_broadband_FCC == min(tx_bb_entrepreneur_merged$pct_broadband_FCC, na.rm = T)),]$county</code></pre>
+<pre><code>## [1] &quot;Llano County&quot; &quot;Upton County&quot;</code></pre>
+<pre class="r"><code># According to MS BB data
+tx_bb_entrepreneur_merged[which(tx_bb_entrepreneur_merged$pct_broadband_MS == min(tx_bb_entrepreneur_merged$pct_broadband_MS, na.rm = T)),]$county</code></pre>
+<pre><code>## [1] &quot;Borden County&quot; &quot;Kenedy County&quot;</code></pre>
+<pre class="r"><code># According to M-Lab BB data
+tx_bb_entrepreneur_merged[which(tx_bb_entrepreneur_merged$frac_BB.dec == min(tx_bb_entrepreneur_merged$frac_BB.dec, na.rm = T)),]$county</code></pre>
+<pre><code>##  [1] &quot;Briscoe County&quot;       &quot;Castro County&quot;        &quot;Cochran County&quot;      
+##  [4] &quot;Crane County&quot;         &quot;Culberson County&quot;     &quot;Delta County&quot;        
+##  [7] &quot;Donley County&quot;        &quot;Hartley County&quot;       &quot;Jim Hogg County&quot;     
+## [10] &quot;Kinney County&quot;        &quot;McMullen County&quot;      &quot;Mitchell County&quot;     
+## [13] &quot;Newton County&quot;        &quot;Refugio County&quot;       &quot;Roberts County&quot;      
+## [16] &quot;San Augustine County&quot; &quot;Sherman County&quot;       &quot;Sterling County&quot;</code></pre>
+<pre class="r"><code># According to ACS BB data
+tx_bb_entrepreneur_merged[which(tx_bb_entrepreneur_merged$pctbbfrac_ASU == min(tx_bb_entrepreneur_merged$pctbbfrac_ASU, na.rm = T)),]$county</code></pre>
+<pre><code>## [1] &quot;Terrell County&quot;</code></pre>
+<pre class="r"><code># Who are the counties with maximum BB?
+
+# According to FCC BB data
+tx_bb_entrepreneur_merged[which(tx_bb_entrepreneur_merged$pct_broadband_FCC == max(tx_bb_entrepreneur_merged$pct_broadband_FCC, na.rm = T)),]$county</code></pre>
+<pre><code>##  [1] &quot;Aransas County&quot;      &quot;Bastrop County&quot;      &quot;Baylor County&quot;      
+##  [4] &quot;Bee County&quot;          &quot;Bexar County&quot;        &quot;Bosque County&quot;      
+##  [7] &quot;Brown County&quot;        &quot;Caldwell County&quot;     &quot;Cameron County&quot;     
+## [10] &quot;Dallas County&quot;       &quot;Denton County&quot;       &quot;DeWitt County&quot;      
+## [13] &quot;Ellis County&quot;        &quot;Erath County&quot;        &quot;Gonzales County&quot;    
+## [16] &quot;Grayson County&quot;      &quot;Guadalupe County&quot;    &quot;Hill County&quot;        
+## [19] &quot;Hood County&quot;         &quot;Johnson County&quot;      &quot;Karnes County&quot;      
+## [22] &quot;Kleberg County&quot;      &quot;Knox County&quot;         &quot;Lampasas County&quot;    
+## [25] &quot;Live Oak County&quot;     &quot;McLennan County&quot;     &quot;McMullen County&quot;    
+## [28] &quot;Nueces County&quot;       &quot;Palo Pinto County&quot;   &quot;Parker County&quot;      
+## [31] &quot;San Patricio County&quot; &quot;Somervell County&quot;    &quot;Tarrant County&quot;     
+## [34] &quot;Travis County&quot;       &quot;Willacy County&quot;      &quot;Wilson County&quot;      
+## [37] &quot;Wise County&quot;</code></pre>
+<pre class="r"><code># According to MS BB data
+tx_bb_entrepreneur_merged[which(tx_bb_entrepreneur_merged$pct_broadband_MS == max(tx_bb_entrepreneur_merged$pct_broadband_MS, na.rm = T)),]$county</code></pre>
+<pre><code>## [1] &quot;Loving County&quot;</code></pre>
+<pre class="r"><code># According to M-Lab BB data
+tx_bb_entrepreneur_merged[which(tx_bb_entrepreneur_merged$frac_BB.dec == max(tx_bb_entrepreneur_merged$frac_BB.dec, na.rm = T)),]$county</code></pre>
+<pre><code>## [1] &quot;Motley County&quot;    &quot;Stonewall County&quot;</code></pre>
+<pre class="r"><code># According to ACS BB data
+tx_bb_entrepreneur_merged[which(tx_bb_entrepreneur_merged$pctbbfrac_ASU == max(tx_bb_entrepreneur_merged$pctbbfrac_ASU, na.rm = T)),]$county</code></pre>
+<pre><code>## [1] &quot;Fort Bend County&quot;</code></pre>
+<pre class="r"><code>## Take a look at the frequency distribution of each BB measures
+
+grid.arrange(
+    ggplot(tx_bb_entrepreneur_merged, aes(x = pct_broadband_FCC)) + geom_histogram() + theme_minimal() + xlab(&quot;FCC Broadband&quot;),
+    ggplot(tx_bb_entrepreneur_merged, aes(x = pct_broadband_MS)) + geom_histogram() + theme_minimal() + xlab(&quot;MS Broadband&quot;),
+    ggplot(tx_bb_entrepreneur_merged, aes(x = pctbbfrac_ASU)) + geom_histogram() + theme_minimal() + xlab(&quot;ACS Broadband Subscription&quot;),
+    ggplot(tx_bb_entrepreneur_merged, aes(x = frac_BB.dec)) + geom_histogram() + theme_minimal() + xlab(&quot;M-Lab Broadband&quot;),
+    nrow = 2, ncol = 2, top = &quot;Broadband Measure Distribution&quot;
+  )</code></pre>
+<p><img src="Preliminary_Analysis_files/figure-html/Broadband%20Comparison-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>## Plotting relationships between BB measures
+
+grid.arrange(
+  ggplot(tx_bb_entrepreneur_merged, aes(x = pct_broadband_FCC, y = pct_broadband_MS)) + geom_point() + geom_smooth(method = &quot;lm&quot;) + theme_minimal() + ylab(&quot;Microsoft Broadband&quot;) + xlab(&quot;FCC Broadband&quot;),
+  ggplot(tx_bb_entrepreneur_merged, aes(x = pct_broadband_FCC, y = pctbbfrac_ASU)) + geom_point() + geom_smooth(method = &quot;lm&quot;) + ylab(&quot;ACS BB Subscription&quot;) + xlab(&quot;FCC Broadband&quot;) + theme_minimal(),
+  ggplot(tx_bb_entrepreneur_merged, aes(x = pct_broadband_FCC, y = frac_BB.dec)) + geom_point() + geom_smooth(method = &quot;lm&quot;) + theme_minimal() + ylab(&quot;M-Lab Broadband&quot;) + xlab(&quot;FCC Broadband&quot;),
+  ggplot(tx_bb_entrepreneur_merged, aes(x = pct_broadband_MS, y = frac_BB.dec)) + geom_point() + geom_smooth(method = &quot;lm&quot;) + theme_minimal() + ylab(&quot;M-Lab Broadband&quot;) + xlab(&quot;Microsoft Broadband&quot;),
+  ggplot(tx_bb_entrepreneur_merged, aes(x = pct_broadband_MS, y = pctbbfrac_ASU)) + geom_point() + geom_smooth(method = &quot;lm&quot;) + ylab(&quot;ACS BB Subscription&quot;) + xlab(&quot;Microsoft Broadband&quot;) + theme_minimal(),
+  ggplot(tx_bb_entrepreneur_merged, aes(x = pctbbfrac_ASU, y = frac_BB.dec)) + geom_point() + geom_smooth(method = &quot;lm&quot;) + theme_minimal() + ylab(&quot;M-Lab Broadband&quot;) + xlab(&quot;ACS BB Subscription&quot;),
+  nrow = 2, ncol = 3, top = &quot;Correlations b/w Broadband Measures&quot;
+)</code></pre>
+<p><img src="Preliminary_Analysis_files/figure-html/Correlation%20between%20BB%20measures-1.png" width="672" style="display: block; margin: auto;" /></p>
+
+<p>Copyright &copy; 2020 Jaewon Royce Choi, TIPI. All rights reserved.</p>
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
