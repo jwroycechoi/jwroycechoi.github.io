@@ -7,6 +7,7 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 <meta name="author" content="Jaewon Royce Choi" />
@@ -70,9 +71,7 @@ h6 {
 </style>
 
 
-</head>
 
-<body>
 
 <style type = "text/css">
 .main-container {
@@ -86,7 +85,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -191,8 +189,6 @@ $(document).ready(function () {
 });
 </script>
 
-<div class="container-fluid main-container">
-
 <!-- tabsets -->
 
 <style type="text/css">
@@ -249,20 +245,17 @@ $(document).ready(function () {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
 
 
 
@@ -283,13 +276,16 @@ $(document).ready(function () {
   <a href="index.html">About</a>
 </li>
 <li>
-  <a href="Database_Inspect_and_Merge.html">Datasets</a>
+  <a href="01_Database_Inspect_and_Merge.html">Datasets</a>
 </li>
 <li>
-  <a href="Preliminary_Analysis.html">Preliminary Analysis</a>
+  <a href="02_Preliminary_Analysis.html">Preliminary Analysis</a>
 </li>
 <li>
-  <a href="Regression_Analyses.html">Regression Models</a>
+  <a href="05_Broadband_Measurements.html">Broadband Measurements</a>
+</li>
+<li>
+  <a href="03_Regression_Analyses.html">Regression Models</a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -304,8 +300,8 @@ $(document).ready(function () {
 
 
 <h1 class="title toc-ignore">Broadband &amp; Entrepreneurship</h1>
-<h4 class="author"><em>Jaewon Royce Choi</em></h4>
-<h4 class="date"><em>6/24/2020</em></h4>
+<h4 class="author">Jaewon Royce Choi</h4>
+<h4 class="date">6/24/2020</h4>
 
 </div>
 
@@ -314,6 +310,7 @@ $(document).ready(function () {
 <h1>About</h1>
 <p>This website presents data collection, cleaning, and analyses processes involved in an ongoing project investigating the relationships between <strong>broadband and entrepreneurship</strong>. It is a part of a research project conducted by a group of researchers at the <a href="https://texastipi.org">Technology &amp; Information Polity Institute</a> at the University of Texas at Austin. This particular project is funded by the <a href="https://ic2.utexas.edu"><span class="math inline">\(IC^{2}\)</span> Institute</a>.</p>
 <p>Each page of the website will demonstrate the ways in which the research team has collected relevant datasets from various sources and conducted several kinds of analyses. <strong>The project is in its early stage, and this page will be updated regularly.</strong></p>
+<p>We welcome thoughtful feedbacks and questions! Please contact Jaewon R. Choi at <a href="mailto:jaewonrchoi@utexas.edu" class="email">jaewonrchoi@utexas.edu</a> for any inquiries.</p>
 </div>
 
 <p>Copyright &copy; 2020 Jaewon Royce Choi, TIPI. All rights reserved.</p>
@@ -334,6 +331,23 @@ $(document).ready(function () {
 
 
 </script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>

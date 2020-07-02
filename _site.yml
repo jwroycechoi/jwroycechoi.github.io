@@ -5,11 +5,13 @@ navbar:
     - text: "About"
       href: index.html
     - text: "Datasets"
-      href: Database_Inspect_and_Merge.html
+      href: 01_Database_Inspect_and_Merge.html
     - text: "Preliminary Analysis"
-      href: Preliminary_Analysis.html
+      href: 02_Preliminary_Analysis.html
+    - text: "Broadband Measurements"
+      href: 05_Broadband_Measurements.html
     - text: "Regression Models"
-      href: Regression_Analyses.html
+      href: 03_Regression_Analyses.html
 output:
   html_document:
     theme: cosmo

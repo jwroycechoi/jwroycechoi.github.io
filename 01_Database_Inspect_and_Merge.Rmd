@@ -1,0 +1,532 @@
+---
+title: "Database Inspect and Merge"
+author: "Jaewon Royce Choi"
+date: "6/11/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+```
+
+This document lays out the data handling process of multiple databases related to broadband availability, speed, and entrepreneurship of Texas. Databases used here are as follows:
+
+* Microsoft Broadband Availability Dataset
+* Measurement Lab (M-Lab) Datasets Exported via Google BigQuery
+* GoDaddy Venture Density & Demographic Dataset
+* Texas Sole Proprietors Data
+* IRR Rural Index
+
+In the following sections, I will import, clean, and set up the aforementioned datasets to be joined by _county_.
+
+Install and call packages used for the folloiwng process.
+
+```{r package, echo=TRUE}
+rm(list = ls())   ## Clear the workspace
+
+
+#install.packages("tidyverse")
+#install.packages("ggplot2")
+#install.packages("DBI")
+#devtools::install_github("rstats-db/bigrquery")
+library(tidyverse)
+library(ggplot2)
+library(DBI)
+```
+
+***
+
+## Microsoft Broadband Availability Dataset
+
+Microsoft dataset is available in its [GitHub repository](https://github.com/microsoft/USBroadbandUsagePercentages). Therefore, we will directly import its dataset from the URL.
+
+```{r Microsoft Import, echo=FALSE, results='hide'}
+## Import the Dataset
+ms_broadband <- read.csv("https://raw.githubusercontent.com/microsoft/USBroadbandUsagePercentages/master/dataset/broadband_data.csv", header = T)
+
+## Inspect Structure
+str(ms_broadband)
+```
+
+Note that the percentage variables are imported as factors. We need them to be in the form of integers. Converting factors directly to numeric vectors using `as.numeric()` would result in loss of information. Following the methods suggested [here](https://stackoverflow.com/a/3418192/11199930), the code below converts `BROADBAND.AVAILABILITY.PER.FCC` and `BROADBAND.USAGE` to numeric values.
+
+```{r Microsoft Data Manipulation, echo=TRUE, results='hide'}
+## Create new variabes in numeric form
+ms_broadband <- ms_broadband %>% 
+  mutate(pct_broadband_FCC = as.numeric(levels(BROADBAND.AVAILABILITY.PER.FCC))[BROADBAND.AVAILABILITY.PER.FCC],
+         pct_broadband_MS = as.numeric(levels(BROADBAND.USAGE))[BROADBAND.USAGE])
+
+## Confirm the change
+str(ms_broadband)
+
+```
+
+Next step is to filter out information on the states other than Texas
+
+```{r Microsoft TX, results='hide'}
+## Filtering TX
+ms_broadband_tx <- ms_broadband %>% 
+  filter(ST == "TX") %>% droplevels() # Deletes unused levels in factor variables in a dataset
+
+## Inspect the result
+str(ms_broadband_tx)
+
+
+```
+
+## GoDaddy Dataset
+
+The GoDaddy dataset has been used by researchers (Mossberger, Tolbert, & LaCombe, 2020) for studying local entrepreneurship represented by actual adoption and usage of the Internet. The dataset includes venture density variables in various time frames. Furthermore, the dataset includes numbers of important demographic/economic factors derived from the American Community Survey estimates.
+
+In the following section, I will import, inspect and set up the dataset for further join with other databases.
+
+```{r GoDaddy Data Import, echo=TRUE, results='hide'}
+## Import the Dataset
+godaddy_cbsa <- read.csv("https://raw.githubusercontent.com/jwroycechoi/broadband-entrepreneurship/master/Datasets/GoDaddy_CBSA.csv", header = T)    # GoDaddy dataset at the unit of Core Based Statistical Area (CBSA) defined by U.S. Department of Housing and Urban Development
+godaddy_county <- read.csv("https://raw.githubusercontent.com/jwroycechoi/broadband-entrepreneurship/master/Datasets/GoDaddy_County.csv", header = T)    # GoDaddy dataset at the county level
+
+## Inspect Structure
+str(godaddy_cbsa)
+str(godaddy_county)
+
+```
+
+The GoDaddy dataset also has to be filtered to include only Texas data. Since we are at the moment only interested in county level information, the filtering will only be conducted to the county level dataset. The county level dataset has a variable named `cfips`, which is a FIPS code. FIPS code idnetifies Texas by the [first two digit: '48'](https://www.dshs.texas.gov/chs/info/info_txco.shtm).
+
+```{r GoDaddy Texas Filter, results='hide'}
+## Filtering Texas using FIPS code
+str(godaddy_county)
+
+godaddy_county_tx <- godaddy_county %>% 
+  filter(startsWith(as.character(cfips), "48")) %>% # Filter Texas
+  mutate(population = as.numeric(gsub(",","",as.character(population)))) %>% # Convert population from factor to numeric
+  separate(county, into = c("county", "state"), sep = ", ", remove = T) %>% # Separate county variable which had state and county data at the same time
+  droplevels()  # Drop unused levels from factor variables
+
+## Inspect Structure
+str(godaddy_county_tx)
+
+```
+
+## M-Lab Datasets
+
+Measurement Lab (M-Lab) datasets consists of user reported download (DL) and upload (UL) speed by geographical information. The easiest way to access and retrieve data from the database is by making queries via Google BigQuery platform using Standard SQL statements. You can find more about datasets available from M-Lab and overview [here](https://www.measurementlab.net/data/). Currently M-Lab suggests using the _Unified View_ dataset to researchers. The datasets from the following time frames are retrieved through BigQuery using SQL statements shared by M-Lab team modified to match the time frames. The SQL queries and an overview of the methods of calculating median speeds are available [here](https://datastudio.google.com/u/0/reporting/1djtGEuqV4Qwrj26GQTN_xzp3rsMYYcmv/page/s0CPB?s=rzD5rHYkLT4). I made some simple modifications calculating the proportion of people who have recorded median speed of 25Mbps download/3Mbps upload in a given time period, which would align better with FCC's broadband definition. The actual query used is available [here](https://github.com/jwroycechoi/broadband-entrepreneurship/blob/master/Codes/25-3-BB-Query.sql).
+
+* September 2019
+* October 2019
+* November 2019
+* December 2019
+
+These time frames are initially selected because it matches the ones provided in the GoDaddy dataset. GoDaddy dataset provides venture density information in several time frame. While there are several time frames in 2018, the intervals are inconsistent. Since the time frames of 2019 are equally distanced (i.e., monthly) from September to December, this time frame was initially selected for M-Lab data retrieval.
+
+In this section, I will import the retrieved M-Lab datasets and clean them.
+
+```{r M-Lab Data Import and Clean, results='hide'}
+## Import the Dataset
+mlab_sept <- read.csv("https://raw.githubusercontent.com/jwroycechoi/broadband-entrepreneurship/master/Datasets/Mlab_State_All_Sept_2019_2.csv", header = T)
+mlab_oct <- read.csv("https://raw.githubusercontent.com/jwroycechoi/broadband-entrepreneurship/master/Datasets/Mlab_State_All_Oct_2019_2.csv", header = T)
+mlab_nov <- read.csv("https://raw.githubusercontent.com/jwroycechoi/broadband-entrepreneurship/master/Datasets/Mlab_State_All_Nov_2019_2.csv", header = T)
+mlab_dec <- read.csv("https://raw.githubusercontent.com/jwroycechoi/broadband-entrepreneurship/master/Datasets/Mlab_State_All_Dec_2019_2.csv", header = T)
+
+## Inspect Structure
+str(mlab_sept)
+str(mlab_oct)
+str(mlab_nov)
+str(mlab_dec)
+
+#### Cleaning and Filtering the Dataset ####
+## September 2019 ##
+mlab_sept_tx <- mlab_sept %>% 
+  filter(state == "TX") %>% 
+  select(-c("BB_state","BB_county_name","DLmed_state","DLmed_county_name","ULmed_state","ULmed_county_name","ul_sample_state","ul_sample_county_name","dl_sample_state","dl_sample_county_name")) %>% 
+  mutate(county = paste(as.character(county_name), "County", sep = " "),
+         frac_over_25DL = 1 - frac_under_25mbpsDL) %>% 
+  droplevels()
+
+## October 2019 ##
+mlab_oct_tx <- mlab_oct %>% 
+  filter(state == "TX") %>% 
+  select(-c("BB_state","BB_county_name","DLmed_state","DLmed_county_name","ULmed_state","ULmed_county_name","ul_sample_state","ul_sample_county_name","dl_sample_state","dl_sample_county_name")) %>% 
+  mutate(county = paste(as.character(county_name), "County", sep = " "),
+         frac_over_25DL = 1 - frac_under_25mbpsDL) %>% 
+  droplevels()
+
+## November 2019 ##
+mlab_nov_tx <- mlab_nov %>% 
+  filter(state == "TX") %>% 
+  select(-c("BB_state","BB_county_name","DLmed_state","DLmed_county_name","ULmed_state","ULmed_county_name","ul_sample_state","ul_sample_county_name","dl_sample_state","dl_sample_county_name")) %>% 
+  mutate(county = paste(as.character(county_name), "County", sep = " "),
+         frac_over_25DL = 1 - frac_under_25mbpsDL) %>% 
+  droplevels()
+
+## December 2019 ##
+mlab_dec_tx <- mlab_dec %>% 
+  filter(state == "TX") %>% 
+  select(-c("BB_state","BB_county_name","DLmed_state","DLmed_county_name","ULmed_state","ULmed_county_name","ul_sample_state","ul_sample_county_name","dl_sample_state","dl_sample_county_name")) %>% 
+  mutate(county = paste(as.character(county_name), "County", sep = " "),
+         frac_over_25DL = 1 - frac_under_25mbpsDL) %>% 
+  droplevels()
+
+```
+
+## Texas Sole Proprietors Dataset
+
+This dataset contains information of sole proprietors number provided by the Bureau of Business Research at $IC^{2}$ Institute. The information is presented at the county level.
+
+```{r Texas Sole Proprietor Dataset Import and Clean, results='hide'}
+## Import the Dataset
+tx_proprietor <- read_csv("https://raw.githubusercontent.com/jwroycechoi/broadband-entrepreneurship/master/Datasets/Sole-Proprietors-tx-combined.csv")
+
+## Inspect the Structure
+str(tx_proprietor)
+
+```
+
+This dataset's variables are straighforward as it was pre-cleaned on Excel spreadsheet.
+
+## IRR Rural Index
+
+This dataset contains information of IRR index at the county level. The index calculates the extent to which a certain county could be considered as _'rural'_. Smaller the value of the index, more rural the county is considered to be.
+
+There are two datasets that contains data from 2000 and 2010. I will import these datasets, filter for Texas and set up for a final merge of all datasets we have.
+
+```{r IRR Rural Index Import and Clean, results='hide'}
+## Import the Dataset
+rural_2000 <- read_csv("https://raw.githubusercontent.com/jwroycechoi/broadband-entrepreneurship/master/Datasets/IRR-rural-2000.csv")
+rural_2010 <- read_csv("https://raw.githubusercontent.com/jwroycechoi/broadband-entrepreneurship/master/Datasets/IRR-rural-2010.csv")
+
+## Inspect Structure
+str(rural_2000)
+str(rural_2010)
+
+#### Clean the Datasets ####
+## Filter Texas counties using FIPS code ##
+
+rural_2000_tx <- rural_2000 %>% 
+  filter(startsWith(as.character(FIPS2000), "48")) %>% 
+  separate(`County Name`, into = c("county", "state"), sep = ", ", remove = T)
+
+rural_2010_tx <- rural_2010 %>% 
+  filter(startsWith(as.character(FIPS2010), "48")) %>% 
+  separate(`County Name`, into = c("county", "state"), sep = ", ", remove = T)
+
+## Inspect Structure
+str(rural_2000_tx)
+str(rural_2010_tx)
+
+```
+
+## Merge into Single Dataset at the County Level
+
+In this section, I will join all the datasets I have cleand and processed above into a single dataset containing all the information at the county level rows. The names of the datasets created from the process above are as follows
+
+* `ms_broadband_tx`
+* `godaddy_county_tx`
+* `mlab_sept_tx`; `mlab_oct_tx`; `mlab_nov_tx`; `mlab_dec_tx`
+* `tx_proprietor`
+* `rural_2000_tx`; `rural_2010_tx`
+
+I will first inspect the datasets quickly to see if row counts of all datasets are matched since it is possible some of them (especially M-Lab datasets) have less/missing observations. Afterwards, I'll join the datasets into one.
+
+```{r Inspect Dataset Structures and Merge}
+
+#### Inspect the Number of Observations ####
+knitr::kable(tibble(MS = count(ms_broadband_tx)$n, godaddy = count(godaddy_county_tx)$n,
+       mlabsept = count(mlab_sept_tx)$n, mlaboct = count(mlab_oct_tx)$n, mlabnov = count(mlab_nov_tx)$n, mlabdec = count(mlab_dec_tx)$n,
+       txprop = count(tx_proprietor)$n, irr2000 = count(rural_2000_tx)$n, irr2010 = count(rural_2010_tx)$n))
+
+```
+
+Several missing observation from M-Lab datasets and one missing from GoDaddy dataset here. Therefore, it is critical that these datasets are not used as a reference dataset for joining. Folloiwng code chunk will use `join` functions of `dplyr`.
+
+```{r Merge Datsets, results='hide'}
+#### Join the Datasets ####
+
+str(ms_broadband_tx)
+str(godaddy_county_tx)
+str(mlab_dec_tx)
+str(tx_proprietor)
+str(rural_2000_tx)
+
+## The variables to match from each datasets are
+## ms_broadband_tx$COUNTY.ID          Integer
+## ms_broadband_tx$COUNTY.NAME        Factor    ("____ County")
+## godaddy_county_tx$cfips            Integer
+## godaddy_county_tx$county           Character ("____ County")
+## mlab datasets$county               Character ("____ County")
+## tx_proprietor$county               Character ("____ County")
+## rural datasets#county              Character ("____ County")
+
+## Create a character vector for ms_broadband_tx dataset to minimize potential error beforehand
+ms_broadband_tx <- ms_broadband_tx %>% mutate(county = as.character(COUNTY.NAME))
+str(ms_broadband_tx)
+
+## Nested left_joins on IRR dataset
+names(mlab_sept_tx) <- paste(names(mlab_sept_tx), ".sept", sep = "")
+names(mlab_oct_tx) <- paste(names(mlab_oct_tx), ".oct", sep = "")
+names(mlab_nov_tx) <- paste(names(mlab_nov_tx), ".nov", sep = "")
+names(mlab_dec_tx) <- paste(names(mlab_dec_tx), ".dec", sep = "")
+
+tx_bb_entrepreneur_merged <- left_join(rural_2000_tx, rural_2010_tx, by = "county") %>% 
+  left_join(., tx_proprietor, by = "county") %>% 
+  left_join(., ms_broadband_tx, by = "county") %>% 
+  left_join(., godaddy_county_tx, by = "county") %>% 
+  left_join(., mlab_sept_tx, by = c("county" = "county.sept")) %>% 
+  left_join(., mlab_oct_tx, by = c("county" = "county.oct")) %>% 
+  left_join(., mlab_nov_tx, by = c("county" = "county.nov")) %>% 
+  left_join(., mlab_dec_tx, by = c("county" = "county.dec"))
+
+str(tx_bb_entrepreneur_merged)
+
+knitr::kable(head(tx_bb_entrepreneur_merged, 20))
+
+## Drop columns with duplicate information
+
+str(tx_bb_entrepreneur_merged)
+tx_bb_entrepreneur_merged <- tx_bb_entrepreneur_merged %>% 
+  rename(FIPS = FIPS2000) %>% 
+  select(-c("FIPS2010","state.x","state.y","ST","COUNTY.ID","COUNTY.NAME","BROADBAND.AVAILABILITY.PER.FCC","BROADBAND.USAGE",
+            "cfips","state.sept","county_name.sept","state.oct","county_name.oct","state.nov","county_name.nov","state.dec",
+            "county_name.dec"))
+
+tx_bb_entrepreneur_merged <- tx_bb_entrepreneur_merged %>%  # Converting ASU percentage numbers into fraction
+  mutate(pctbbfrac_ASU = pctbroadband/100,
+         pctbbfrac_poor_ASU = pctbroadband_poorpeople/100)
+
+## Export the dataset into csv
+
+write_csv(tx_bb_entrepreneur_merged, "Broadband-Entrepreneurship-TX-merged.csv")
+
+```
+
+## County Business Patterns & Nonemployer Statistics Dataset from the Census Bureau
+
+In this section, we will get data from the [County Business Patterns](https://www.census.gov/data/developers/data-sets/cbp-nonemp-zbp/cbp-api.html) and the [Nonemployer Statistics](https://www.census.gov/data/developers/data-sets/cbp-nonemp-zbp/nonemp-api.html) datasets provided by the Census Bureau. These datasets provide annual statistics of businesses with paid employees and no paid employees or payroll, respectively at a detailed geography and industry level. Using `censusapi` package, I will interact directly with the Census Bureau API to retrieve and modify data. For those who want to follow, one should [request an API key](http://api.census.gov/data/key_signup.html) first before proceeding.
+
+The process here follows a very useful guideline provided by the developer of `censusapi` package. You can find the introduction with useful information and examples of interacting with various APIs [here](https://hrecht.github.io/censusapi/articles/getting-started.html), and also detailed documentations [here](https://github.com/hrecht/censusapi). If you don't need to interact with economic or other datasets and only need demographic information available from the American Community Survey estimates, `tidycensus` [from Kyle Walker](https://walker-data.com/tidycensus/articles/basic-usage.html) is also a good alternative. Here, I will mainly show the process using `censusapi` package.
+
+After installing the package, set up your API key by copying and pasting the code below. Put the API key you got from the Census Bureau instead of what says `"YOUR KEY GOES HERE"` below.
+
+```{r Censusapi API key setup example, eval=FALSE}
+install.packages("censusapi")
+library(censusapi)
+
+# Add key to .Renviron
+Sys.setenv(CENSUS_KEY="YOUR KEY GOES HERE")
+# Reload .Renviron
+readRenviron("~/.Renviron")
+# Check to see that the expected key is output in your R console
+Sys.getenv("CENSUS_KEY")
+```
+
+```{r Censusapi Key setup Run, eval=TRUE, echo=FALSE}
+library(censusapi)
+# Add key to .Renviron
+Sys.setenv(CENSUS_KEY="9001b546c2d77876a089119664dc25a4235eea37")
+# Reload .Renviron
+readRenviron("~/.Renviron")
+# Check to see that the expected key is output in your R console
+Sys.getenv("CENSUS_KEY")
+```
+
+You can take a look at available APIs and other important metadata related to specific APIs using the following functions. Refer to specific documentations of the functions as well as the specific API that you want to investigate.
+
+* `listCensusApis()`: Retrieve all available API handles provided by the Census Bureau.
+* `listCensusMetadata()`: Retrieve important metadata of specific APIs in specific years, such as the variables or geography.
+
+We are interested in County Business Patterns and Nonemployers Statistics. We can check the variables available from the datasets and the geogrphic level using the code below.
+
+```{r Census Dataset Metadata, results='hide'}
+#### CBP Dataset ####
+## County Business Pattern dataset variables and geography
+View(listCensusMetadata(name = "cbp", vintage = 2017, type = "variables"))
+View(listCensusMetadata(name = "cbp", vintage = 2018, type = "variables"))
+listCensusMetadata(name = "cbp", vintage = 2017, type = "geography")
+listCensusMetadata(name = "cbp", vintage = 2018, type = "geography")
+
+# You can also put the variable names into separate object if you want to use it for further queries
+cbp2017_var <- listCensusMetadata(name = "cbp", vintage = 2017, type = "variables")$name
+
+#### Nonemployer Dataset ####
+View(listCensusMetadata(name = "nonemp", vintage = 2017, type = "variables"))
+View(listCensusMetadata(name = "nonemp", vintage = 2018, type = "variables"))
+listCensusMetadata(name = "nonemp", vintage = 2017, type = "geography")
+listCensusMetadata(name = "nonemp", vintage = 2018, type = "geography")
+```
+
+In order to retrive the datasets from the Census database you use `getCensus` function with specific arguments. Generally, required arguments are `name`, `vintage`(i.e., year), `vars`(i.e., variables), and `region`. In the code below, I'll retrieve CBP and Nonemployer datasets from year 2017 and 2018 for all counties within three states of our interest.
+
+```{r Census Dataset Retrieval}
+## Retrieve CBP datasets for the three states in 2017 and 2018 ##
+cbp2017_txksme <- getCensus(name = "cbp",
+                            vintage = 2017,
+                            vars = c("GEO_ID","LFO","NAICS2017","INDGROUP","INDLEVEL","SECTOR","ESTAB","EMPSZES","EMP","EMP_N","PAYANN","PAYQTR1"),
+                            region = "county:*",
+                            regionin = "state:20,23,48")
+
+cbp2018_txksme <- getCensus(name = "cbp",
+                            vintage = 2018,
+                            vars = c("EMP","EMP_N","EMPSZES","ESTAB","GEO_ID","INDGROUP","INDLEVEL","LFO","NAICS2017","PAYANN","PAYQTR1","SECTOR"),
+                            region = "county:*",
+                            regionin = "state:20,23,48")
+
+## Retrieve Nonemployer datasets for the three states in 2017 and 2018 ##
+nonemp2018 <- getCensus(name = "nonemp",
+                        vintage = 2018,
+                        vars = c("GEO_ID","INDGROUP","INDLEVEL","LFO","NAICS2017","NESTAB","NRCPTOT","RCPSZES","SECTOR"),
+                        region = "county:*",
+                        regionin = "state:20,23,48")
+
+nonemp2017 <- getCensus(name = "nonemp",
+                        vintage = 2017,
+                        vars = c("GEO_ID","INDGROUP","INDLEVEL","LFO","NAICS2017","NESTAB","NRCPTOT","RCPSZES","SECTOR"),
+                        region = "county:*",
+                        regionin = "state:20,23,48")
+```
+
+Some variables should be numerical instead of character. Also, I'll create few factors for easier interpretation of regional information.
+
+```{r Census Dataset Mod1, results='hide'}
+## Some modifications for CBP datasets ##
+cbp2017_txksme <- cbp2017_txksme %>% 
+  mutate(state_name = case_when(state == "48" ~ "Texas",
+                                state == "20" ~ "Kansas",
+                                state == "23" ~ "Maine",
+                                TRUE ~ state),
+         county_FIPS = paste(state, county, sep = ""),
+         EMP = as.numeric(EMP),
+         EMPSZES = as.numeric(EMPSZES),
+         ESTAB = as.numeric(ESTAB),
+         PAYANN = as.numeric(PAYANN),
+         PAYQTR1 = as.numeric(PAYQTR1))
+
+cbp2018_txksme <- cbp2018_txksme %>% 
+  mutate(state_name = case_when(state == "48" ~ "Texas",
+                                state == "20" ~ "Kansas",
+                                state == "23" ~ "Maine",
+                                TRUE ~ state),
+         county_FIPS = paste(state, county, sep = ""),
+         EMP = as.numeric(EMP),
+         EMPSZES = as.numeric(EMPSZES),
+         ESTAB = as.numeric(ESTAB),
+         PAYANN = as.numeric(PAYANN),
+         PAYQTR1 = as.numeric(PAYQTR1))
+
+# Also, we need to filter for state of Texas at this point of the analysis
+cbp2017_tx <- cbp2017_txksme %>% filter(state_name == "Texas")
+cbp2018_tx <- cbp2018_txksme %>% filter(state_name == "Texas")
+str(cbp2017_tx)
+str(cbp2018_tx)
+
+## Some modifications for Nonemployer datasets ##
+nonemp2017 <- nonemp2017 %>% 
+  mutate(state_name = case_when(state == "48" ~ "Texas",
+                                state == "20" ~ "Kansas",
+                                state == "23" ~ "Maine",
+                                TRUE ~ state),
+         county_FIPS = paste(state, county, sep = ""),
+         NESTAB = as.numeric(NESTAB),
+         NRCPTOT = as.numeric(NRCPTOT),
+         RCPSZES = as.numeric(RCPSZES))
+
+nonemp2018 <- nonemp2018 %>% 
+  mutate(state_name = case_when(state == "48" ~ "Texas",
+                                state == "20" ~ "Kansas",
+                                state == "23" ~ "Maine",
+                                TRUE ~ state),
+         county_FIPS = paste(state, county, sep = ""),
+         NESTAB = as.numeric(NESTAB),
+         NRCPTOT = as.numeric(NRCPTOT),
+         RCPSZES = as.numeric(RCPSZES))
+
+# Filter Texas
+nonemp2017_tx <- nonemp2017 %>% filter(state_name == "Texas")
+nonemp2018_tx <- nonemp2018 %>% filter(state_name == "Texas")
+```
+
+As you can see from inspecting the structure of the datasets, we need to aggregate these into county level in order to merge with other datasets and analyze. Overall, I will create several variables of based on the employment, annual payroll and establishment data available in the datasets. Specifically, I will calculate **average** indices and **percentages** of smaller sized business amongst the total in a given county. Below are the variables and brief descriptions.
+
+* `avg_emp_ `: Average # of business establishment per county
+* `avg_emp_ `: Average # of employees per county
+* `avg_empszes_ `: Average employment size of establishments per county
+* `avg_payann_ `: Average annual payroll ($1,000) per county
+* `avg_payqtr1_ `: Average first-quarter payroll ($1,000) per county
+* `total_emp_ `: Total sum of employment per county
+* `total_estab_ `: Total sum of establishments per county
+* `pctnonemp_ `: Percentage of those with 0 employees among total observations
+* `pctsmallent_ `: Percentage of those with 1~10 employees among total observations
+* `pctsmall_50_ `: Percentage of those with 11~50 employees among total observations
+* `total_ `: Total observations per county
+* `avg_nestab_ `: Average nonemployer establishment per county
+* `avg_nrcptot_ `: Average nonemployer sales, values of shipments, or revenue ($1,000)
+* `totalnest_ `: Total sum of nonemployer establishment per county
+* `total` : Total observations per county
+
+```{r Census Dataset Aggregation}
+#### CBP Dataset Aggregation ####
+cbp2017_tx_agg <- cbp2017_tx %>% group_by(county_FIPS) %>% 
+  summarise(avg_estab_2017 = mean(ESTAB, na.rm = T),
+            avg_emp_2017 = mean(EMP, na.rm = T),
+            avg_empszes_2017 = mean(EMPSZES, na.rm = T),
+            avg_payann_2017 = mean(PAYANN, na.rm = T),
+            avg_payqtr1_2017 = mean(PAYQTR1, na.rm = T),
+            total_estab_2017 = sum(ESTAB),
+            total_emp_2017 = sum(EMP),
+            pctnonemp_2017 = sum(EMP == 0) / n(),
+            pctsmallent_2017 = sum(EMP > 0 & EMP <= 10) / n(),
+            pctsmall_50_2017 = sum(EMP > 10 & EMP <= 50) / n(),
+            total_2017 = n())
+
+cbp2018_tx_agg <- cbp2018_tx %>% group_by(county_FIPS) %>% 
+  summarise(avg_estab_2018 = mean(ESTAB, na.rm = T),
+            avg_emp_2018 = mean(EMP, na.rm = T),
+            avg_empszes_2018 = mean(EMPSZES, na.rm = T),
+            avg_payann_2018 = mean(PAYANN, na.rm = T),
+            avg_payqtr1_2018 = mean(PAYQTR1, na.rm = T),
+            total_estab_2018 = sum(ESTAB),
+            total_emp_2018 = sum(EMP),
+            pctnonemp_2018 = sum(EMP == 0) / n(),
+            pctsmallent_2018 = sum(EMP > 0 & EMP <= 10) / n(),
+            pctsmall_50_2018 = sum(EMP > 10 & EMP <= 50) / n(),
+            total_2018 = n())
+
+#### Nonemployer Dataset Aggregation ####
+nonemp2017_tx_agg <- nonemp2017_tx %>% 
+  group_by(county_FIPS) %>%
+  summarise(avg_nestab_2017 = mean(NESTAB, na.rm = T),
+            avg_nrcptot_2017 = mean(NRCPTOT, na.rm = T),
+            totalnest_2017 = sum(NESTAB),
+            total = n())
+
+nonemp2018_tx_agg <- nonemp2018 %>% 
+  group_by(county_FIPS) %>%
+  summarise(avg_nestab_2018 = mean(NESTAB, na.rm = T),
+            avg_nrcptot_2018 = mean(NRCPTOT, na.rm = T),
+            totalnest_2018 = sum(NESTAB),
+            total = n())
+
+```
+
+Now we will merge these datasets by county FIPS numbers altogether
+
+```{r Merge all datasets}
+## Join the aggregated Census datasets ##
+cbp_tx <- left_join(cbp2017_tx_agg, cbp2018_tx_agg, by = "county_FIPS")
+nonemp_tx <- left_join(nonemp2017_tx_agg, nonemp2018_tx_agg, by = "county_FIPS")
+
+## Create a V2 merged dataset ##
+tx_bb_entrepreneur_merged_v2 <- tx_bb_entrepreneur_merged %>% 
+  mutate(FIPS = as.character(FIPS)) %>% 
+  left_join(., cbp_tx, by = c("FIPS" = "county_FIPS")) %>% 
+  left_join(., nonemp_tx, by = c("FIPS" = "county_FIPS"))
+
+## Generate average GoDaddy & M-lab broadband measures ##
+tx_bb_entrepreneur_merged_v2 <- tx_bb_entrepreneur_merged_v2 %>% 
+  mutate(venturedensity_mean = (venturedensitymay18 + venturedensitynov18 + venturedensityfeb19 + venturedensitysep19 + venturedensityoct19 + venturedensitynov19 + venturedensitydec19) / 7,
+         highlyactive_vd_mean = (highlyactive_vdmay18 + highlyactive_vdnov18 + highlyactive_vdfeb19 + highlyactive_vdsep19 + highlyactive_vdoct19 + highlyactive_vdnov19 + highlyactive_vddec19) / 7,
+         pct_broadband_mlab = (frac_BB.sept + frac_BB.oct + frac_BB.nov + frac_BB.dec) / 4)
+
+## Write CSV ##
+write_csv(tx_bb_entrepreneur_merged_v2, "Broadband-Entrepreneurship-TX-merged_v2.csv")
+
+```
