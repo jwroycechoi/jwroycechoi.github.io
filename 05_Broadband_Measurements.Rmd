@@ -99,7 +99,7 @@ map %>% addTiles() %>% setView(lng = -100.000, lat = 31.000, zoom = 6) %>%
   addLegend("bottomright", pal = pal, values = ~pct_broadband_FCC,
             title = "FCC Broadband (%)",
             labFormat = labelFormat(suffix = "%", transform = function(x) 100*x), na.label = "N/A", opacity = 1) %>% 
-  leaflet.extras::addFullscreenControl()
+  leaflet.extras::addFullscreenControl(position = "topright")
 ```
 
 ### Microsoft Broadband Usage in Texas
@@ -113,7 +113,7 @@ map %>% addTiles() %>% setView(lng = -100.000, lat = 31.000, zoom = 6) %>%
   addLegend("bottomright", pal = pal, values = ~pct_broadband_MS,
             title = "MS Broadband (%)",
             labFormat = labelFormat(suffix = "%", transform = function(x) 100*x), na.label = "N/A", opacity = 1) %>% 
-  leaflet.extras::addFullscreenControl()
+  leaflet.extras::addFullscreenControl(position = "topright")
 ```
 
 ### ACS Broadband Subscription in Texas
@@ -127,7 +127,7 @@ map %>% addTiles() %>% setView(lng = -100.000, lat = 31.000, zoom = 6) %>%
   addLegend("bottomright", pal = pal, values = ~pctbbfrac_ASU,
             title = "ACS Broadband Subscription (%)",
             labFormat = labelFormat(suffix = "%", transform = function(x) 100*x), na.label = "N/A", opacity = 1) %>% 
-  leaflet.extras::addFullscreenControl()
+  leaflet.extras::addFullscreenControl(position = "topright")
 ```
 
 ### M-Lab Broadband Usage in Texas
@@ -141,7 +141,7 @@ map %>% addTiles() %>% setView(lng = -100.000, lat = 31.000, zoom = 6) %>%
   addLegend("bottomright", pal = pal, values = ~pct_broadband_mlab,
             title = "M-Lab Broadband (%)",
             labFormat = labelFormat(suffix = "%", transform = function(x) 100*x), na.label = "N/A", opacity = 1) %>% 
-  leaflet.extras::addFullscreenControl()
+  leaflet.extras::addFullscreenControl(position = "topright")
 ```
 
 
