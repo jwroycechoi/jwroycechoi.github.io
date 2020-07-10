@@ -7,7 +7,6 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
-<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 <meta name="author" content="Jaewon Royce Choi" />
@@ -71,7 +70,9 @@ h6 {
 </style>
 
 
+</head>
 
+<body>
 
 <style type = "text/css">
 .main-container {
@@ -85,6 +86,7 @@ code {
 }
 img {
   max-width:100%;
+  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -189,6 +191,8 @@ $(document).ready(function () {
 });
 </script>
 
+<div class="container-fluid main-container">
+
 <!-- tabsets -->
 
 <style type="text/css">
@@ -245,17 +249,20 @@ $(document).ready(function () {
 }
 </style>
 
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
 <!-- code folding -->
 
-
-
-
-</head>
-
-<body>
-
-
-<div class="container-fluid main-container">
 
 
 
@@ -300,8 +307,8 @@ $(document).ready(function () {
 
 
 <h1 class="title toc-ignore">Database Inspect and Merge</h1>
-<h4 class="author">Jaewon Royce Choi</h4>
-<h4 class="date">6/11/2020</h4>
+<h4 class="author"><em>Jaewon Royce Choi</em></h4>
+<h4 class="date"><em>6/11/2020</em></h4>
 
 </div>
 
@@ -324,12 +331,12 @@ $(document).ready(function () {
 #install.packages(&quot;DBI&quot;)
 #devtools::install_github(&quot;rstats-db/bigrquery&quot;)
 library(tidyverse)</code></pre>
-<pre><code>## ── Attaching packages ───────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
-<pre><code>## ✓ ggplot2 3.3.0     ✓ purrr   0.3.3
-## ✓ tibble  3.0.1     ✓ dplyr   0.8.5
-## ✓ tidyr   1.0.2     ✓ stringr 1.4.0
+<pre><code>## ── Attaching packages ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.1.0     ✓ purrr   0.3.0
+## ✓ tibble  3.0.1     ✓ dplyr   0.8.3
+## ✓ tidyr   0.8.2     ✓ stringr 1.4.0
 ## ✓ readr   1.3.1     ✓ forcats 0.4.0</code></pre>
-<pre><code>## ── Conflicts ──────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+<pre><code>## ── Conflicts ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
 ## x dplyr::filter() masks stats::filter()
 ## x dplyr::lag()    masks stats::lag()</code></pre>
 <pre class="r"><code>library(ggplot2)
@@ -590,18 +597,16 @@ tx_bb_entrepreneur_merged &lt;- tx_bb_entrepreneur_merged %&gt;%
 
 tx_bb_entrepreneur_merged &lt;- tx_bb_entrepreneur_merged %&gt;%  # Converting ASU percentage numbers into fraction
   mutate(pctbbfrac_ASU = pctbroadband/100,
-         pctbbfrac_poor_ASU = pctbroadband_poorpeople/100)
-
-## Export the dataset into csv
-
-write_csv(tx_bb_entrepreneur_merged, &quot;Broadband-Entrepreneurship-TX-merged.csv&quot;)</code></pre>
+         pctbbfrac_poor_ASU = pctbroadband_poorpeople/100)</code></pre>
 </div>
 <div id="county-business-patterns-nonemployer-statistics-dataset-from-the-census-bureau" class="section level2">
 <h2>County Business Patterns &amp; Nonemployer Statistics Dataset from the Census Bureau</h2>
 <p>In this section, we will get data from the <a href="https://www.census.gov/data/developers/data-sets/cbp-nonemp-zbp/cbp-api.html">County Business Patterns</a> and the <a href="https://www.census.gov/data/developers/data-sets/cbp-nonemp-zbp/nonemp-api.html">Nonemployer Statistics</a> datasets provided by the Census Bureau. These datasets provide annual statistics of businesses with paid employees and no paid employees or payroll, respectively at a detailed geography and industry level. Using <code>censusapi</code> package, I will interact directly with the Census Bureau API to retrieve and modify data. For those who want to follow, one should <a href="http://api.census.gov/data/key_signup.html">request an API key</a> first before proceeding.</p>
 <p>The process here follows a very useful guideline provided by the developer of <code>censusapi</code> package. You can find the introduction with useful information and examples of interacting with various APIs <a href="https://hrecht.github.io/censusapi/articles/getting-started.html">here</a>, and also detailed documentations <a href="https://github.com/hrecht/censusapi">here</a>. If you don’t need to interact with economic or other datasets and only need demographic information available from the American Community Survey estimates, <code>tidycensus</code> <a href="https://walker-data.com/tidycensus/articles/basic-usage.html">from Kyle Walker</a> is also a good alternative. Here, I will mainly show the process using <code>censusapi</code> package.</p>
 <p>After installing the package, set up your API key by copying and pasting the code below. Put the API key you got from the Census Bureau instead of what says <code>&quot;YOUR KEY GOES HERE&quot;</code> below.</p>
-<pre class="r"><code>install.packages(&quot;censusapi&quot;)
+<pre class="r"><code># For general usage, use install.packages(&quot;censusapi&quot;) to install most stable version of the package.
+
+devtools::install_github(&quot;jwroycechoi/censusapi&quot;)     # A fork that fixes some issues regarding NAICS2017 and labels
 library(censusapi)
 
 # Add key to .Renviron
@@ -624,6 +629,7 @@ Sys.getenv(&quot;CENSUS_KEY&quot;)</code></pre>
 <p>We are interested in County Business Patterns and Nonemployers Statistics. We can check the variables available from the datasets and the geogrphic level using the code below.</p>
 <pre class="r"><code>#### CBP Dataset ####
 ## County Business Pattern dataset variables and geography
+View(listCensusMetadata(name = &quot;cbp&quot;, vintage = 2012, type = &quot;variables&quot;))
 View(listCensusMetadata(name = &quot;cbp&quot;, vintage = 2017, type = &quot;variables&quot;))
 View(listCensusMetadata(name = &quot;cbp&quot;, vintage = 2018, type = &quot;variables&quot;))
 listCensusMetadata(name = &quot;cbp&quot;, vintage = 2017, type = &quot;geography&quot;)
@@ -633,167 +639,546 @@ listCensusMetadata(name = &quot;cbp&quot;, vintage = 2018, type = &quot;geograph
 cbp2017_var &lt;- listCensusMetadata(name = &quot;cbp&quot;, vintage = 2017, type = &quot;variables&quot;)$name
 
 #### Nonemployer Dataset ####
+View(listCensusMetadata(name = &quot;nonemp&quot;, vintage = 2012, type = &quot;variables&quot;))
 View(listCensusMetadata(name = &quot;nonemp&quot;, vintage = 2017, type = &quot;variables&quot;))
 View(listCensusMetadata(name = &quot;nonemp&quot;, vintage = 2018, type = &quot;variables&quot;))
 listCensusMetadata(name = &quot;nonemp&quot;, vintage = 2017, type = &quot;geography&quot;)
 listCensusMetadata(name = &quot;nonemp&quot;, vintage = 2018, type = &quot;geography&quot;)</code></pre>
 <p>In order to retrive the datasets from the Census database you use <code>getCensus</code> function with specific arguments. Generally, required arguments are <code>name</code>, <code>vintage</code>(i.e., year), <code>vars</code>(i.e., variables), and <code>region</code>. In the code below, I’ll retrieve CBP and Nonemployer datasets from year 2017 and 2018 for all counties within three states of our interest.</p>
 <pre class="r"><code>## Retrieve CBP datasets for the three states in 2017 and 2018 ##
+cbp2012_txksme &lt;- getCensus(name = &quot;cbp&quot;,
+                            vintage = 2012,
+                            vars = c(&quot;EMP&quot;,&quot;EMP_F&quot;,&quot;EMPSZES&quot;,&quot;EMPSZES_TTL&quot;,&quot;ESTAB&quot;,&quot;ESTAB_F&quot;,&quot;NAICS2012&quot;,&quot;NAICS2012_TTL&quot;),
+                            region = &quot;county:*&quot;,
+                            regionin = &quot;state:20,23,48&quot;)
+
 cbp2017_txksme &lt;- getCensus(name = &quot;cbp&quot;,
                             vintage = 2017,
-                            vars = c(&quot;GEO_ID&quot;,&quot;LFO&quot;,&quot;NAICS2017&quot;,&quot;INDGROUP&quot;,&quot;INDLEVEL&quot;,&quot;SECTOR&quot;,&quot;ESTAB&quot;,&quot;EMPSZES&quot;,&quot;EMP&quot;,&quot;EMP_N&quot;,&quot;PAYANN&quot;,&quot;PAYQTR1&quot;),
+                            vars = c(&quot;EMP&quot;,&quot;EMP_F&quot;,&quot;EMPSZES&quot;,&quot;EMPSZES_LABEL&quot;,&quot;ESTAB&quot;,&quot;ESTAB_F&quot;,&quot;NAICS2017&quot;,&quot;NAICS2017_LABEL&quot;),
                             region = &quot;county:*&quot;,
                             regionin = &quot;state:20,23,48&quot;)
 
 cbp2018_txksme &lt;- getCensus(name = &quot;cbp&quot;,
                             vintage = 2018,
-                            vars = c(&quot;EMP&quot;,&quot;EMP_N&quot;,&quot;EMPSZES&quot;,&quot;ESTAB&quot;,&quot;GEO_ID&quot;,&quot;INDGROUP&quot;,&quot;INDLEVEL&quot;,&quot;LFO&quot;,&quot;NAICS2017&quot;,&quot;PAYANN&quot;,&quot;PAYQTR1&quot;,&quot;SECTOR&quot;),
+                            vars = c(&quot;EMP&quot;,&quot;EMP_F&quot;,&quot;EMPSZES&quot;,&quot;EMPSZES_LABEL&quot;,&quot;ESTAB&quot;,&quot;ESTAB_F&quot;,&quot;NAICS2017&quot;,&quot;NAICS2017_LABEL&quot;),
                             region = &quot;county:*&quot;,
                             regionin = &quot;state:20,23,48&quot;)
 
 ## Retrieve Nonemployer datasets for the three states in 2017 and 2018 ##
-nonemp2018 &lt;- getCensus(name = &quot;nonemp&quot;,
-                        vintage = 2018,
-                        vars = c(&quot;GEO_ID&quot;,&quot;INDGROUP&quot;,&quot;INDLEVEL&quot;,&quot;LFO&quot;,&quot;NAICS2017&quot;,&quot;NESTAB&quot;,&quot;NRCPTOT&quot;,&quot;RCPSZES&quot;,&quot;SECTOR&quot;),
+nonemp2012 &lt;- getCensus(name = &quot;nonemp&quot;,
+                        vintage = 2012,
+                        vars = c(&quot;NESTAB&quot;,&quot;NESTAB_F&quot;,&quot;NAICS2012&quot;,&quot;NAICS2012_TTL&quot;,&quot;SECTOR&quot;),
                         region = &quot;county:*&quot;,
                         regionin = &quot;state:20,23,48&quot;)
 
 nonemp2017 &lt;- getCensus(name = &quot;nonemp&quot;,
                         vintage = 2017,
-                        vars = c(&quot;GEO_ID&quot;,&quot;INDGROUP&quot;,&quot;INDLEVEL&quot;,&quot;LFO&quot;,&quot;NAICS2017&quot;,&quot;NESTAB&quot;,&quot;NRCPTOT&quot;,&quot;RCPSZES&quot;,&quot;SECTOR&quot;),
+                        vars = c(&quot;NESTAB&quot;,&quot;NESTAB_F&quot;,&quot;NAICS2017&quot;,&quot;NAICS2017_TTL&quot;,&quot;SECTOR&quot;),
+                        region = &quot;county:*&quot;,
+                        regionin = &quot;state:20,23,48&quot;)
+
+nonemp2018 &lt;- getCensus(name = &quot;nonemp&quot;,
+                        vintage = 2018,
+                        vars = c(&quot;NESTAB&quot;,&quot;NESTAB_F&quot;,&quot;NAICS2017&quot;,&quot;NAICS2017_LABEL&quot;,&quot;SECTOR&quot;),
                         region = &quot;county:*&quot;,
                         regionin = &quot;state:20,23,48&quot;)</code></pre>
-<p>Some variables should be numerical instead of character. Also, I’ll create few factors for easier interpretation of regional information.</p>
+<p>Some variables should be numerical instead of character. Also, I’ll create few factors for easier interpretation of regional information. Here I will create variables that could potentially represent entrepreneurial activities within the counties. The variables have to be aggregated into county level observations. Note that currently our research purpose does not weigh into investigating industry breakdowns or revenues. Following list of variables will be aggregated at the county level:</p>
+<p><strong>County Business Patterns Dataset</strong> * <code>emp_cbp_YEAR</code>: Total employment for all industry sectors and all establishments in the county * <code>pct_50_est_cbp_YEAR</code>: % of establishments with less than 50 employees over all establishments in the county * <code>pct_10_est_cbp_YEAR</code>: % of establishments with less than 10 employees over all establishments in the county</p>
+<p><strong>Nonemployer Statistics</strong> * <code>neest_nemp_YEAR</code>: Total nonemployer establishments for all industry sectors in the county * <code>nonfarmneest_nemp_YEAR</code>: Total nonfarm nonemployer establishments in the county * <code>pct_nonfarmneest_nemp_YEAR</code>: % of nonfarm nonemployer establishments over all nonemployer establishments in the county</p>
 <pre class="r"><code>## Some modifications for CBP datasets ##
-cbp2017_txksme &lt;- cbp2017_txksme %&gt;% 
-  mutate(state_name = case_when(state == &quot;48&quot; ~ &quot;Texas&quot;,
-                                state == &quot;20&quot; ~ &quot;Kansas&quot;,
-                                state == &quot;23&quot; ~ &quot;Maine&quot;,
-                                TRUE ~ state),
-         county_FIPS = paste(state, county, sep = &quot;&quot;),
+cbp2012_txksme &lt;- cbp2012_txksme %&gt;% 
+  mutate(county_FIPS = paste(state, county, sep = &quot;&quot;),
          EMP = as.numeric(EMP),
-         EMPSZES = as.numeric(EMPSZES),
          ESTAB = as.numeric(ESTAB),
-         PAYANN = as.numeric(PAYANN),
-         PAYQTR1 = as.numeric(PAYQTR1))
+         EMP = case_when(EMP_F == &quot;a&quot; ~ round(median(seq(0,19)), digits = 0),  # For employment range symbols, replace with median of the range
+                         EMP_F == &quot;b&quot; ~ round(median(seq(20,99)), digits = 0),
+                         EMP_F == &quot;c&quot; ~ round(median(seq(100,249)), digits = 0),
+                         EMP_F == &quot;e&quot; ~ round(median(seq(250,499)), digits = 0),
+                         EMP_F == &quot;f&quot; ~ round(median(seq(500,999)), digits = 0),
+                         EMP_F == &quot;g&quot; ~ round(median(seq(1000,2499)), digits = 0),
+                         EMP_F == &quot;h&quot; ~ round(median(seq(2500,4999)), digits = 0),
+                         EMP_F == &quot;i&quot; ~ round(median(seq(5000,9999)), digits = 0),
+                         EMP_F == &quot;j&quot; ~ round(median(seq(10000,24999)), digits = 0),
+                         EMP_F == &quot;k&quot; ~ round(median(seq(25000,49999)), digits = 0),
+                         EMP_F == &quot;l&quot; ~ round(median(seq(50000,99999)), digits = 0),
+                         EMP_F == &quot;m&quot; ~ 100000,
+                         TRUE ~ EMP))
+
+cbp2017_txksme &lt;- cbp2017_txksme %&gt;% 
+  mutate(county_FIPS = paste(state, county, sep = &quot;&quot;),
+         EMP = as.numeric(EMP),
+         ESTAB = as.numeric(ESTAB),
+         EMP = case_when(EMP_F == &quot;a&quot; ~ round(median(seq(0,19)), digits = 0),  # For employment range symbols, replace with median of the range
+                         EMP_F == &quot;b&quot; ~ round(median(seq(20,99)), digits = 0),
+                         EMP_F == &quot;c&quot; ~ round(median(seq(100,249)), digits = 0),
+                         EMP_F == &quot;e&quot; ~ round(median(seq(250,499)), digits = 0),
+                         EMP_F == &quot;f&quot; ~ round(median(seq(500,999)), digits = 0),
+                         EMP_F == &quot;g&quot; ~ round(median(seq(1000,2499)), digits = 0),
+                         EMP_F == &quot;h&quot; ~ round(median(seq(2500,4999)), digits = 0),
+                         EMP_F == &quot;i&quot; ~ round(median(seq(5000,9999)), digits = 0),
+                         EMP_F == &quot;j&quot; ~ round(median(seq(10000,24999)), digits = 0),
+                         EMP_F == &quot;k&quot; ~ round(median(seq(25000,49999)), digits = 0),
+                         EMP_F == &quot;l&quot; ~ round(median(seq(50000,99999)), digits = 0),
+                         EMP_F == &quot;m&quot; ~ 100000,
+                         TRUE ~ EMP))
 
 cbp2018_txksme &lt;- cbp2018_txksme %&gt;% 
-  mutate(state_name = case_when(state == &quot;48&quot; ~ &quot;Texas&quot;,
-                                state == &quot;20&quot; ~ &quot;Kansas&quot;,
-                                state == &quot;23&quot; ~ &quot;Maine&quot;,
-                                TRUE ~ state),
-         county_FIPS = paste(state, county, sep = &quot;&quot;),
+  mutate(county_FIPS = paste(state, county, sep = &quot;&quot;),
          EMP = as.numeric(EMP),
-         EMPSZES = as.numeric(EMPSZES),
          ESTAB = as.numeric(ESTAB),
-         PAYANN = as.numeric(PAYANN),
-         PAYQTR1 = as.numeric(PAYQTR1))
+         EMP = case_when(EMP_F == &quot;a&quot; ~ round(median(seq(0,19)), digits = 0),  # For employment range symbols, replace with median of the range
+                         EMP_F == &quot;b&quot; ~ round(median(seq(20,99)), digits = 0),
+                         EMP_F == &quot;c&quot; ~ round(median(seq(100,249)), digits = 0),
+                         EMP_F == &quot;e&quot; ~ round(median(seq(250,499)), digits = 0),
+                         EMP_F == &quot;f&quot; ~ round(median(seq(500,999)), digits = 0),
+                         EMP_F == &quot;g&quot; ~ round(median(seq(1000,2499)), digits = 0),
+                         EMP_F == &quot;h&quot; ~ round(median(seq(2500,4999)), digits = 0),
+                         EMP_F == &quot;i&quot; ~ round(median(seq(5000,9999)), digits = 0),
+                         EMP_F == &quot;j&quot; ~ round(median(seq(10000,24999)), digits = 0),
+                         EMP_F == &quot;k&quot; ~ round(median(seq(25000,49999)), digits = 0),
+                         EMP_F == &quot;l&quot; ~ round(median(seq(50000,99999)), digits = 0),
+                         EMP_F == &quot;m&quot; ~ 100000,
+                         TRUE ~ EMP))
 
 # Also, we need to filter for state of Texas at this point of the analysis
-cbp2017_tx &lt;- cbp2017_txksme %&gt;% filter(state_name == &quot;Texas&quot;)
-cbp2018_tx &lt;- cbp2018_txksme %&gt;% filter(state_name == &quot;Texas&quot;)
-str(cbp2017_tx)
-str(cbp2018_tx)
+cbp2012_tx &lt;- cbp2012_txksme %&gt;% filter(state == &quot;48&quot;)
+cbp2017_tx &lt;- cbp2017_txksme %&gt;% filter(state == &quot;48&quot;)
+cbp2018_tx &lt;- cbp2018_txksme %&gt;% filter(state == &quot;48&quot;)
 
 ## Some modifications for Nonemployer datasets ##
+nonemp2012 &lt;- nonemp2012 %&gt;% 
+  mutate(county_FIPS = paste(state, county, sep = &quot;&quot;),
+         NESTAB = as.numeric(NESTAB))
+
 nonemp2017 &lt;- nonemp2017 %&gt;% 
-  mutate(state_name = case_when(state == &quot;48&quot; ~ &quot;Texas&quot;,
-                                state == &quot;20&quot; ~ &quot;Kansas&quot;,
-                                state == &quot;23&quot; ~ &quot;Maine&quot;,
-                                TRUE ~ state),
-         county_FIPS = paste(state, county, sep = &quot;&quot;),
-         NESTAB = as.numeric(NESTAB),
-         NRCPTOT = as.numeric(NRCPTOT),
-         RCPSZES = as.numeric(RCPSZES))
+  mutate(county_FIPS = paste(state, county, sep = &quot;&quot;),
+         NESTAB = as.numeric(NESTAB))
 
 nonemp2018 &lt;- nonemp2018 %&gt;% 
-  mutate(state_name = case_when(state == &quot;48&quot; ~ &quot;Texas&quot;,
-                                state == &quot;20&quot; ~ &quot;Kansas&quot;,
-                                state == &quot;23&quot; ~ &quot;Maine&quot;,
-                                TRUE ~ state),
-         county_FIPS = paste(state, county, sep = &quot;&quot;),
-         NESTAB = as.numeric(NESTAB),
-         NRCPTOT = as.numeric(NRCPTOT),
-         RCPSZES = as.numeric(RCPSZES))
+  mutate(county_FIPS = paste(state, county, sep = &quot;&quot;),
+         NESTAB = as.numeric(NESTAB))
 
 # Filter Texas
-nonemp2017_tx &lt;- nonemp2017 %&gt;% filter(state_name == &quot;Texas&quot;)
-nonemp2018_tx &lt;- nonemp2018 %&gt;% filter(state_name == &quot;Texas&quot;)</code></pre>
-<p>As you can see from inspecting the structure of the datasets, we need to aggregate these into county level in order to merge with other datasets and analyze. Overall, I will create several variables of based on the employment, annual payroll and establishment data available in the datasets. Specifically, I will calculate <strong>average</strong> indices and <strong>percentages</strong> of smaller sized business amongst the total in a given county. Below are the variables and brief descriptions.</p>
-<ul>
-<li><code>avg_emp_</code>: Average # of business establishment per county</li>
-<li><code>avg_emp_</code>: Average # of employees per county</li>
-<li><code>avg_empszes_</code>: Average employment size of establishments per county</li>
-<li><code>avg_payann_</code>: Average annual payroll ($1,000) per county</li>
-<li><code>avg_payqtr1_</code>: Average first-quarter payroll ($1,000) per county</li>
-<li><code>total_emp_</code>: Total sum of employment per county</li>
-<li><code>total_estab_</code>: Total sum of establishments per county</li>
-<li><code>pctnonemp_</code>: Percentage of those with 0 employees among total observations</li>
-<li><code>pctsmallent_</code>: Percentage of those with 1~10 employees among total observations</li>
-<li><code>pctsmall_50_</code>: Percentage of those with 11~50 employees among total observations</li>
-<li><code>total_</code>: Total observations per county</li>
-<li><code>avg_nestab_</code>: Average nonemployer establishment per county</li>
-<li><code>avg_nrcptot_</code>: Average nonemployer sales, values of shipments, or revenue ($1,000)</li>
-<li><code>totalnest_</code>: Total sum of nonemployer establishment per county</li>
-<li><code>total</code> : Total observations per county</li>
-</ul>
+nonemp2012_tx &lt;- nonemp2012 %&gt;% filter(state == &quot;48&quot;)
+nonemp2017_tx &lt;- nonemp2017 %&gt;% filter(state == &quot;48&quot;)
+nonemp2018_tx &lt;- nonemp2018 %&gt;% filter(state == &quot;48&quot;)</code></pre>
 <pre class="r"><code>#### CBP Dataset Aggregation ####
-cbp2017_tx_agg &lt;- cbp2017_tx %&gt;% group_by(county_FIPS) %&gt;% 
-  summarise(avg_estab_2017 = mean(ESTAB, na.rm = T),
-            avg_emp_2017 = mean(EMP, na.rm = T),
-            avg_empszes_2017 = mean(EMPSZES, na.rm = T),
-            avg_payann_2017 = mean(PAYANN, na.rm = T),
-            avg_payqtr1_2017 = mean(PAYQTR1, na.rm = T),
-            total_estab_2017 = sum(ESTAB),
-            total_emp_2017 = sum(EMP),
-            pctnonemp_2017 = sum(EMP == 0) / n(),
-            pctsmallent_2017 = sum(EMP &gt; 0 &amp; EMP &lt;= 10) / n(),
-            pctsmall_50_2017 = sum(EMP &gt; 10 &amp; EMP &lt;= 50) / n(),
-            total_2017 = n())
+cbp2012_tx_agg &lt;- cbp2012_tx %&gt;% 
+  filter(NAICS2012 == &quot;00&quot;) %&gt;% # Filter for all sectors
+  filter(EMPSZES == &quot;001&quot;|
+           EMPSZES == &quot;212&quot;|EMPSZES == &quot;220&quot;|EMPSZES == &quot;230&quot;|EMPSZES == &quot;241&quot;) %&gt;% # Filter for employment size
+  mutate(est_total = ifelse(EMPSZES == &quot;001&quot; &amp; NAICS2012 == &quot;00&quot;, ESTAB, 0),
+         emp_total = ifelse(EMPSZES == &quot;001&quot; &amp; NAICS2012 == &quot;00&quot;, EMP, 0),
+         est_50 = ifelse(EMPSZES != &quot;001&quot;, ESTAB, 0),
+         est_10 = ifelse(EMPSZES == &quot;212&quot; | EMPSZES == &quot;220&quot;, ESTAB, 0)) %&gt;% 
+  group_by(county_FIPS) %&gt;% 
+  summarise(emp_cbp_2012 = sum(emp_total, na.rm = T),
+            est_cbp_2012 = sum(est_total, na.rm = T),
+            est_50_cbp_2012 = sum(est_50, na.rm = T),
+            est_10_cbp_2012 = sum(est_10, na.rm = T)) %&gt;% 
+  mutate(pct_50_est_cbp_2012 = est_50_cbp_2012 / est_cbp_2012,
+         pct_10_est_cbp_2012 = est_10_cbp_2012 / est_cbp_2012)
 
-cbp2018_tx_agg &lt;- cbp2018_tx %&gt;% group_by(county_FIPS) %&gt;% 
-  summarise(avg_estab_2018 = mean(ESTAB, na.rm = T),
-            avg_emp_2018 = mean(EMP, na.rm = T),
-            avg_empszes_2018 = mean(EMPSZES, na.rm = T),
-            avg_payann_2018 = mean(PAYANN, na.rm = T),
-            avg_payqtr1_2018 = mean(PAYQTR1, na.rm = T),
-            total_estab_2018 = sum(ESTAB),
-            total_emp_2018 = sum(EMP),
-            pctnonemp_2018 = sum(EMP == 0) / n(),
-            pctsmallent_2018 = sum(EMP &gt; 0 &amp; EMP &lt;= 10) / n(),
-            pctsmall_50_2018 = sum(EMP &gt; 10 &amp; EMP &lt;= 50) / n(),
-            total_2018 = n())
+cbp2017_tx_agg &lt;- cbp2017_tx %&gt;% 
+  filter(NAICS2017 == &quot;00&quot;) %&gt;% # Filter for all sectors
+  filter(EMPSZES == &quot;001&quot;|
+           EMPSZES == &quot;212&quot;|EMPSZES == &quot;220&quot;|EMPSZES == &quot;230&quot;|EMPSZES == &quot;241&quot;) %&gt;% # Filter for employment size
+  mutate(est_total = ifelse(EMPSZES == &quot;001&quot; &amp; NAICS2017 == &quot;00&quot;, ESTAB, 0),
+         emp_total = ifelse(EMPSZES == &quot;001&quot; &amp; NAICS2017 == &quot;00&quot;, EMP, 0),
+         est_50 = ifelse(EMPSZES != &quot;001&quot;, ESTAB, 0),
+         est_10 = ifelse(EMPSZES == &quot;212&quot; | EMPSZES == &quot;220&quot;, ESTAB, 0)) %&gt;% 
+  group_by(county_FIPS) %&gt;% 
+  summarise(emp_cbp_2017 = sum(emp_total, na.rm = T),
+            est_cbp_2017 = sum(est_total, na.rm = T),
+            est_50_cbp_2017 = sum(est_50, na.rm = T),
+            est_10_cbp_2017 = sum(est_10, na.rm = T)) %&gt;% 
+  mutate(pct_50_est_cbp_2017 = est_50_cbp_2017 / est_cbp_2017,
+         pct_10_est_cbp_2017 = est_10_cbp_2017 / est_cbp_2017)
+
+cbp2018_tx_agg &lt;- cbp2018_tx %&gt;% 
+  filter(NAICS2017 == &quot;00&quot;) %&gt;% # Filter for all sectors
+  filter(EMPSZES == &quot;001&quot;|
+           EMPSZES == &quot;212&quot;|EMPSZES == &quot;220&quot;|EMPSZES == &quot;230&quot;|EMPSZES == &quot;241&quot;) %&gt;% # Filter for employment size
+  mutate(est_total = ifelse(EMPSZES == &quot;001&quot; &amp; NAICS2017 == &quot;00&quot;, ESTAB, 0),
+         emp_total = ifelse(EMPSZES == &quot;001&quot; &amp; NAICS2017 == &quot;00&quot;, EMP, 0),
+         est_50 = ifelse(EMPSZES != &quot;001&quot;, ESTAB, 0),
+         est_10 = ifelse(EMPSZES == &quot;212&quot; | EMPSZES == &quot;220&quot;, ESTAB, 0)) %&gt;% 
+  group_by(county_FIPS) %&gt;% 
+  summarise(emp_cbp_2018 = sum(emp_total, na.rm = T),
+            est_cbp_2018 = sum(est_total, na.rm = T),
+            est_50_cbp_2018 = sum(est_50, na.rm = T),
+            est_10_cbp_2018 = sum(est_10, na.rm = T)) %&gt;% 
+  mutate(pct_50_est_cbp_2018 = est_50_cbp_2018 / est_cbp_2018,
+         pct_10_est_cbp_2018 = est_10_cbp_2018 / est_cbp_2018)
+
+## Merge three years datasets ##
+cbp_tx &lt;- left_join(cbp2012_tx_agg, cbp2017_tx_agg, by = &quot;county_FIPS&quot;) %&gt;% left_join(., cbp2018_tx_agg, by = &quot;county_FIPS&quot;)
 
 #### Nonemployer Dataset Aggregation ####
+nonemp2012_tx_agg &lt;- nonemp2012_tx %&gt;% 
+  mutate(est_total = ifelse(NAICS2012 == &quot;00&quot;, NESTAB, 0),
+         nonfarm_est_total = ifelse(str_detect(NAICS2012, &quot;^11&quot;, negate = TRUE), NESTAB, 0),
+         nonfarm_est_total = ifelse(NAICS2012 == &quot;00&quot;, 0, nonfarm_est_total)) %&gt;% 
+  group_by(SECTOR, county_FIPS) %&gt;% slice(1) %&gt;% ungroup() %&gt;% 
+  group_by(county_FIPS) %&gt;% 
+  summarise(neest_nemp_2012 = sum(est_total, na.rm = T),
+            nonfarmneest_nemp_2012 = sum(nonfarm_est_total, na.rm = T)) %&gt;% 
+  mutate(pct_nonfarmneest_nemp_2012 = nonfarmneest_nemp_2012 / neest_nemp_2012)
+
 nonemp2017_tx_agg &lt;- nonemp2017_tx %&gt;% 
-  group_by(county_FIPS) %&gt;%
-  summarise(avg_nestab_2017 = mean(NESTAB, na.rm = T),
-            avg_nrcptot_2017 = mean(NRCPTOT, na.rm = T),
-            totalnest_2017 = sum(NESTAB),
-            total = n())
+  mutate(est_total = ifelse(NAICS2017 == &quot;00&quot;, NESTAB, 0),
+         nonfarm_est_total = ifelse(str_detect(NAICS2017, &quot;^11&quot;, negate = TRUE), NESTAB, 0),
+         nonfarm_est_total = ifelse(NAICS2017 == &quot;00&quot;, 0, nonfarm_est_total)) %&gt;% 
+  group_by(SECTOR, county_FIPS) %&gt;% slice(1) %&gt;% ungroup() %&gt;% 
+  group_by(county_FIPS) %&gt;% 
+  summarise(neest_nemp_2017 = sum(est_total, na.rm = T),
+            nonfarmneest_nemp_2017 = sum(nonfarm_est_total, na.rm = T)) %&gt;% 
+  mutate(pct_nonfarmneest_nemp_2017 = nonfarmneest_nemp_2017 / neest_nemp_2017)
 
-nonemp2018_tx_agg &lt;- nonemp2018 %&gt;% 
-  group_by(county_FIPS) %&gt;%
-  summarise(avg_nestab_2018 = mean(NESTAB, na.rm = T),
-            avg_nrcptot_2018 = mean(NRCPTOT, na.rm = T),
-            totalnest_2018 = sum(NESTAB),
-            total = n())</code></pre>
+nonemp2018_tx_agg &lt;- nonemp2018_tx %&gt;% 
+  mutate(est_total = ifelse(NAICS2017 == &quot;00&quot;, NESTAB, 0),
+         nonfarm_est_total = ifelse(str_detect(NAICS2017, &quot;^11&quot;, negate = TRUE), NESTAB, 0),
+         nonfarm_est_total = ifelse(NAICS2017 == &quot;00&quot;, 0, nonfarm_est_total)) %&gt;% 
+  group_by(SECTOR, county_FIPS) %&gt;% slice(1) %&gt;% ungroup() %&gt;% 
+  group_by(county_FIPS) %&gt;% 
+  summarise(neest_nemp_2018 = sum(est_total, na.rm = T),
+            nonfarmneest_nemp_2018 = sum(nonfarm_est_total, na.rm = T)) %&gt;% 
+  mutate(pct_nonfarmneest_nemp_2018 = nonfarmneest_nemp_2018 / neest_nemp_2018)
+
+## Merge three years datasets ##
+nonemp_tx &lt;- left_join(nonemp2012_tx_agg, nonemp2017_tx_agg, by= &quot;county_FIPS&quot;) %&gt;% left_join(., nonemp2018_tx_agg, by = &quot;county_FIPS&quot;) %&gt;% 
+  mutate(chg_pct_nonfarmneest_nemp_2012_2018 = pct_nonfarmneest_nemp_2018 - pct_nonfarmneest_nemp_2012)</code></pre>
+</div>
+<div id="other-economic-statistics" class="section level2">
+<h2>Other Economic Statistics</h2>
+<p>Additionally, I will gather several other economic statistics from few other datasets. THe information gathered here will be <strong>employments, nonfarm proprietors, number of firms, and change in number of firms</strong>. Information regarding the employments and nonfarm proprietors will be gathered from dataset provided by the <a href="https://www.bea.gov">Bureau of Economic Analysis (BEA)</a>. Previous data from CBP and Nonemployer Statistics (NS) provide information at the level of establishments. Datasets from the <a href="https://www.census.gov/programs-surveys/abs.html">Annual Business Survey (ABS)</a> provides <em>firm level</em> statistics. The Annual Business Survey is a survey conducted by the Census Bureau that replaces five-year Survey of Business Owners (SBO) for employer businesses, the Annual Survey of Entrepreneurs (ASE), the Business R&amp;D and Innovation for Microbusinesses survey (BRDI-M), and the innovation section of the Business R&amp;D and Innovation Survey (BRDI-S) from survey year 2017. Comparable information from previous time frame will be imported from SBO and ASE datasets.</p>
+<p>From the aforementioned datasets, I will retrieve and create the following measures:</p>
+<p><strong>Bureau of Economic Analysis (BEA)</strong> * <code>pct_nonfarm_propr_YEAR</code>: % of nonfarm proprietors over total employment * <code>pct_chg_bea_2012_2018</code>: Change in % of nonfarm proprietors over total employment between 2012 and 2018</p>
+<p><strong>Annual Business Survey (ABS) (+ SBO, ASE)</strong> * <code>firm_YEAR</code>: Number of firms with paid employees * <code>chg_firm_YEAR</code>: Change in the number of firms with paid employees</p>
+<div id="bea-dataset-api-call" class="section level3">
+<h3>BEA Dataset API Call</h3>
+<p>For BEA data, you have to separately <a href="https://apps.bea.gov/API/signup/index.cfm">register for BEA API key</a>. In <code>R</code>, there is a package that helps you interact with BEA API called <code>bea.R</code>. Detailed information and instructions can be found <a href="https://github.com/us-bea/bea.R">here</a>.</p>
+<pre><code>## Loading required package: data.table</code></pre>
+<pre><code>## 
+## Attaching package: &#39;data.table&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:dplyr&#39;:
+## 
+##     between, first, last</code></pre>
+<pre><code>## The following object is masked from &#39;package:purrr&#39;:
+## 
+##     transpose</code></pre>
+<pre><code>## Creating a generic function for &#39;toJSON&#39; from package &#39;jsonlite&#39; in package &#39;googleVis&#39;</code></pre>
+<pre><code>## Note: As of February 2018, beaGet() requires &#39;TableName&#39; for NIPA and NIUnderlyingDetail data instead of &#39;TableID.&#39; See https://github.us-bea/bea.R for details.</code></pre>
+<pre class="r"><code>#### BEA API Interaction and Dataset Explore ####
+## Use bea.R package. An introduction of how the package works is available in the GitHub page (https://github.com/us-bea/bea.R) ##
+## Mainly we want to explore what kind of data is available and will be useful in terms of entrepreneurship.
+## Specifically non-farm proprietorship information that is comparable across different states.
+
+install.packages(&quot;bea.R&quot;)
+
+library(bea.R)
+library(tidyverse)
+
+# Set up the API Key
+beaKey &lt;- &quot;YOUR API KEY&quot;
+
+#### Checking datasets and available tables etc. ####
+## BEA API exploration requires few prior knowledge on available datasets and tables
+## Datasets available are listed here (https://apps.bea.gov/API/signup/index.cfm)
+## Tables and parameters used for querying specific datasets are available in the appendices in the API user guide (https://apps.bea.gov/API/bea_web_service_api_user_guide.htm#tabs-9a)
+## Another way to identify what you are looking for is playing around with interactive application provided by BEA here (https://apps.bea.gov/itable/itable.cfm).
+## In our case we want to look at county level regional information. Specifically, nonfarm proprietors employment
+
+### First, you can use beaSearch to see what data tables are available by keyword
+
+beaSearch(&quot;Regional&quot;, beaKey, asHtml = T)     # Currently, regional dataset is depracated and seems like the bea.R package hasn&#39;t yet been fully updated
+
+### Second, inspect the parameters and parameter values
+## We can look at what parameters are available for querying the dataset &#39;Regional&#39; by using code below
+beaParams(beaKey = beaKey, &#39;Regional&#39;)
+## Further, you can see what values are available for specific parameter using code below
+beaParamVals(beaKey = beaKey, &#39;Regional&#39;, &#39;TableName&#39;)
+beaParamVals(beaKey = beaKey, &#39;Regional&#39;, &#39;LineCode&#39;)</code></pre>
+<pre class="r"><code>### Finally, we will use the parameter and parameter values to retrieve data table
+## In terms of LineCode, we are interested in:
+## 10: Total employment
+## 20: Wage and salary employment
+## 40: Proprietors employment
+## 60: Nonfarm proprietors employment
+
+## In terms of GeoFips, we will query all counties and then filter later on for the three states: Kansas, Maine, Texas
+## In terms of Year, the research team has decided to look at the most recent year (2018) and 2012 as it is the year the nation started
+## to recover from the Recession
+
+## The LineCode parameter does not allow multiple values input.
+## Therefore, we have to generate separate tables for each LineCode and merge afterwards
+
+#### Retrive Data tables from BEA API ####
+# LineCode 10
+beaSpecs_10 &lt;- list(
+  &#39;UserID&#39; = beaKey,
+  &#39;Method&#39; = &#39;GetData&#39;,
+  &#39;datasetname&#39; = &#39;Regional&#39;,
+  &#39;TableName&#39; = &#39;CAEMP25N&#39;,
+  &#39;LineCode&#39; = 10,
+  &#39;GeoFips&#39; = &#39;COUNTY&#39;,
+  &#39;Year&#39; = &#39;2012,2018&#39;
+)
+
+bea_10 &lt;- beaGet(beaSpecs_10, asWide = TRUE)
+
+# LineCode 20
+beaSpecs_20 &lt;- list(
+  &#39;UserID&#39; = beaKey,
+  &#39;Method&#39; = &#39;GetData&#39;,
+  &#39;datasetname&#39; = &#39;Regional&#39;,
+  &#39;TableName&#39; = &#39;CAEMP25N&#39;,
+  &#39;LineCode&#39; = 20,
+  &#39;GeoFips&#39; = &#39;COUNTY&#39;,
+  &#39;Year&#39; = &#39;2012,2018&#39;
+)
+
+bea_20 &lt;- beaGet(beaSpecs_20, asWide = TRUE)
+
+# LineCode 40
+beaSpecs_40 &lt;- list(
+  &#39;UserID&#39; = beaKey,
+  &#39;Method&#39; = &#39;GetData&#39;,
+  &#39;datasetname&#39; = &#39;Regional&#39;,
+  &#39;TableName&#39; = &#39;CAEMP25N&#39;,
+  &#39;LineCode&#39; = 40,
+  &#39;GeoFips&#39; = &#39;COUNTY&#39;,
+  &#39;Year&#39; = &#39;2012,2018&#39;
+)
+
+bea_40 &lt;- beaGet(beaSpecs_40, asWide = TRUE)
+
+# LineCode 60
+beaSpecs_60 &lt;- list(
+  &#39;UserID&#39; = beaKey,
+  &#39;Method&#39; = &#39;GetData&#39;,
+  &#39;datasetname&#39; = &#39;Regional&#39;,
+  &#39;TableName&#39; = &#39;CAEMP25N&#39;,
+  &#39;LineCode&#39; = 60,
+  &#39;GeoFips&#39; = &#39;COUNTY&#39;,
+  &#39;Year&#39; = &#39;2012,2018&#39;
+)
+
+bea_60 &lt;- beaGet(beaSpecs_60, asWide = TRUE)
+
+#### Clean, Filter the Data Tables and Merge ####
+## BEA Total Employment
+bea_10 &lt;- bea_10 %&gt;% filter(str_detect(GeoFips, &quot;^48&quot;)|str_detect(GeoFips, &quot;^20&quot;)|str_detect(GeoFips, &quot;^23&quot;)) %&gt;% 
+  select(GeoFips, DataValue_2012, DataValue_2018) %&gt;% 
+  rename(totalemp_bea_2012 = DataValue_2012,
+         totalemp_bea_2018 = DataValue_2018)
+str(bea_10)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    375 obs. of  3 variables:
+##  $ GeoFips          : chr  &quot;20001&quot; &quot;20003&quot; &quot;20005&quot; &quot;20007&quot; ...
+##  $ totalemp_bea_2012: num  8551 3909 8469 3591 20005 ...
+##  $ totalemp_bea_2018: num  8234 3924 8150 3662 19486 ...
+##  - attr(*, &quot;.internal.selfref&quot;)=&lt;externalptr&gt; 
+##  - attr(*, &quot;sorted&quot;)= chr  &quot;Code&quot; &quot;GeoFips&quot; &quot;GeoName&quot; &quot;CL_UNIT&quot; ...
+##  - attr(*, &quot;is.wide&quot;)= logi TRUE
+##  - attr(*, &quot;params&quot;)=&#39;data.frame&#39;:   7 obs. of  2 variables:
+##   ..$ ParameterName : chr  &quot;LINECODE&quot; &quot;METHOD&quot; &quot;YEAR&quot; &quot;USERID&quot; ...
+##   ..$ ParameterValue: chr  &quot;10&quot; &quot;GETDATA&quot; &quot;2012,2018&quot; &quot;1C5D7A5A-D3C0-4919-8D47-820A118D7A56&quot; ...
+##  - attr(*, &quot;detail&quot;)=List of 7
+##   ..$ Statistic        : chr &quot;Total employment&quot;
+##   ..$ UnitOfMeasure    : chr &quot;Number of jobs&quot;
+##   ..$ PublicTable      : chr &quot;CAEMP25N Total employment (number of jobs)&quot;
+##   ..$ UTCProductionTime: chr &quot;2020-07-10T16:56:28.837&quot;
+##   ..$ NoteRef          : chr &quot; &quot;
+##   ..$ Dimensions       :&#39;data.frame&#39;:    7 obs. of  3 variables:
+##   .. ..$ Name    : chr  &quot;Code&quot; &quot;GeoFips&quot; &quot;GeoName&quot; &quot;TimePeriod&quot; ...
+##   .. ..$ DataType: chr  &quot;string&quot; &quot;string&quot; &quot;string&quot; &quot;string&quot; ...
+##   .. ..$ IsValue : chr  &quot;0&quot; &quot;0&quot; &quot;0&quot; &quot;0&quot; ...
+##   ..$ Notes            :&#39;data.frame&#39;:    8 obs. of  2 variables:
+##   .. ..$ NoteRef : chr  &quot;*&quot; &quot;*&quot; &quot;*&quot; &quot;*&quot; ...
+##   .. ..$ NoteText: chr  &quot;Broomfield County, CO, was created from parts of Adams, Boulder, Jefferson, and Weld counties effective Novembe&quot;| __truncated__ &quot;Estimates from 2008 forward separate Skagway-Hoonah-Angoon Census Area into Skagway Municipality and Hoonah-Ang&quot;| __truncated__ &quot;Virginia combination areas consist of one or two independent cities with 1980 populations of less than 100,000 &quot;| __truncated__ &quot;Shannon County, SD was renamed to Oglala Lakota County, SD on May 1, 2015.&quot; ...</code></pre>
+<pre class="r"><code>## BEA Wage and Salary Employment
+bea_20 &lt;- bea_20 %&gt;% filter(str_detect(GeoFips, &quot;^48&quot;)|str_detect(GeoFips, &quot;^20&quot;)|str_detect(GeoFips, &quot;^23&quot;)) %&gt;% 
+  select(GeoFips, DataValue_2012, DataValue_2018) %&gt;% 
+  rename(salaryemp_bea_2012 = DataValue_2012,
+         salaryemp_bea_2018 = DataValue_2018)
+## BEA Proprietors Employment
+bea_40 &lt;- bea_40 %&gt;% filter(str_detect(GeoFips, &quot;^48&quot;)|str_detect(GeoFips, &quot;^20&quot;)|str_detect(GeoFips, &quot;^23&quot;)) %&gt;% 
+  select(GeoFips, DataValue_2012, DataValue_2018) %&gt;% 
+  rename(proprietors_bea_2012 = DataValue_2012,
+         proprietors_bea_2018 = DataValue_2018)
+## BEA Nonfarm Proprietors Employment
+bea_60 &lt;- bea_60 %&gt;% filter(str_detect(GeoFips, &quot;^48&quot;)|str_detect(GeoFips, &quot;^20&quot;)|str_detect(GeoFips, &quot;^23&quot;)) %&gt;% 
+  select(GeoFips, DataValue_2012, DataValue_2018) %&gt;% 
+  rename(nonfarmproprietors_bea_2012 = DataValue_2012,
+         nonfarmproprietors_bea_2018 = DataValue_2018)
+
+## Merge Datasets ##
+bea_nonfarmproprietor_txksme &lt;- left_join(bea_10, bea_20, by = &quot;GeoFips&quot;) %&gt;% 
+  left_join(., bea_40, by = &quot;GeoFips&quot;) %&gt;% left_join(., bea_60, by = &quot;GeoFips&quot;)
+
+## Calculate Several Variables ##
+# Percentage variables and change
+# Percentage of nonfarm proprietors in total employment
+# Percentage change from 2012 to 2018
+
+bea_nonfarmproprietor_txksme &lt;- bea_nonfarmproprietor_txksme %&gt;% 
+  mutate(pct_nonfarm_bea_2012 = nonfarmproprietors_bea_2012 / totalemp_bea_2012,
+         pct_nonfarm_bea_2018 = nonfarmproprietors_bea_2018 / totalemp_bea_2018,
+         pct_chg_bea_2012_2018 = pct_nonfarm_bea_2018 - pct_nonfarm_bea_2012)
+str(bea_nonfarmproprietor_txksme)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    375 obs. of  12 variables:
+##  $ GeoFips                    : chr  &quot;20001&quot; &quot;20003&quot; &quot;20005&quot; &quot;20007&quot; ...
+##  $ totalemp_bea_2012          : num  8551 3909 8469 3591 20005 ...
+##  $ totalemp_bea_2018          : num  8234 3924 8150 3662 19486 ...
+##  $ salaryemp_bea_2012         : num  6233 2151 6545 1987 13781 ...
+##  $ salaryemp_bea_2018         : num  6021 2248 6224 1834 12937 ...
+##  $ proprietors_bea_2012       : num  2318 1758 1924 1604 6224 ...
+##  $ proprietors_bea_2018       : num  2213 1676 1926 1828 6549 ...
+##  $ nonfarmproprietors_bea_2012: num  1750 1133 1387 1275 5631 ...
+##  $ nonfarmproprietors_bea_2018: num  1667 1068 1413 1502 5983 ...
+##  $ pct_nonfarm_bea_2012       : num  0.205 0.29 0.164 0.355 0.281 ...
+##  $ pct_nonfarm_bea_2018       : num  0.202 0.272 0.173 0.41 0.307 ...
+##  $ pct_chg_bea_2012_2018      : num  -0.0022 -0.0177 0.0096 0.0551 0.0256 ...</code></pre>
+<pre class="r"><code># Finally filter for Texas state
+bea_nonfarmproprietor_tx &lt;- bea_nonfarmproprietor_txksme %&gt;% 
+  filter(str_detect(GeoFips, &quot;^48&quot;))</code></pre>
+</div>
+<div id="abs-dataset-api-call" class="section level3">
+<h3>ABS Dataset API Call</h3>
+<p>In this section, I will import relevant datasets from ABS, ASE, and SBO and create a dataset that will be used for final merge.</p>
+<pre class="r"><code>#### Look at ABS Metadata ####
+## Detailed information about available tables and variables can be found in PDF documents here (https://www.census.gov/programs-surveys/abs/technical-documentation/api.html)
+
+View(listCensusMetadata(name = &quot;abscs&quot;, vintage = 2017, type = &quot;variables&quot;))
+View(listCensusMetadata(name = &quot;ase/csa&quot;, vintage = 2015, type = &quot;variables&quot;))
+View(listCensusMetadata(name = &quot;ase/csa&quot;, vintage = 2015, type = &quot;geographies&quot;))  # Can&#39;t use ASE data because it does not have county level info
+View(listCensusMetadata(name = &quot;sbo&quot;, vintage = 2012, type = &quot;variables&quot;))
+View(listCensusMetadata(name = &quot;sbo&quot;, vintage = 2012, type = &quot;geographies&quot;))</code></pre>
+<pre class="r"><code>## ABS Company Summary Datatable ##
+firmlevel_2017 &lt;- getCensus(name = &quot;abscs&quot;,
+                        vintage = 2017,
+                        vars = c(&quot;EMP&quot;,&quot;EMP_F&quot;,&quot;FIRMPDEMP&quot;,&quot;FIRMPDEMP_F&quot;),
+                        region = &quot;county:*&quot;,
+                        regionin = &quot;state:20,23,48&quot;)
+
+firmlevel_2012 &lt;- getCensus(name = &quot;sbo&quot;,
+                            vintage = 2012,
+                            vars = c(&quot;EMP&quot;,&quot;EMP_F&quot;,&quot;FIRMPDEMP&quot;,&quot;FIRMPDEMP_F&quot;),
+                            region = &quot;county:*&quot;,
+                            regionin = &quot;state:20,23,48&quot;)
+
+## Clean and transform ##
+firmlevel_2012 &lt;- firmlevel_2012 %&gt;% 
+  mutate(county_FIPS = paste(state, county, sep = &quot;&quot;),
+         EMP = as.numeric(EMP),
+         FIRMPDEMP = as.numeric(FIRMPDEMP),
+         EMP = case_when(EMP_F == &quot;a&quot; ~ round(median(seq(0,19)), digits = 0),  # For employment range symbols, replace with median of the range
+                         EMP_F == &quot;b&quot; ~ round(median(seq(20,99)), digits = 0),
+                         EMP_F == &quot;c&quot; ~ round(median(seq(100,249)), digits = 0),
+                         EMP_F == &quot;e&quot; ~ round(median(seq(250,499)), digits = 0),
+                         EMP_F == &quot;f&quot; ~ round(median(seq(500,999)), digits = 0),
+                         EMP_F == &quot;g&quot; ~ round(median(seq(1000,2499)), digits = 0),
+                         EMP_F == &quot;h&quot; ~ round(median(seq(2500,4999)), digits = 0),
+                         EMP_F == &quot;i&quot; ~ round(median(seq(5000,9999)), digits = 0),
+                         EMP_F == &quot;j&quot; ~ round(median(seq(10000,24999)), digits = 0),
+                         EMP_F == &quot;k&quot; ~ round(median(seq(25000,49999)), digits = 0),
+                         EMP_F == &quot;l&quot; ~ round(median(seq(50000,99999)), digits = 0),
+                         EMP_F == &quot;m&quot; ~ 100000,
+                         TRUE ~ EMP),
+         FIRMPDEMP = case_when(FIRMPDEMP_F == &quot;S&quot; ~ NA_real_, TRUE ~ FIRMPDEMP)) %&gt;% 
+  rename(emp_abs_2012 = EMP, firm_2012 = FIRMPDEMP) %&gt;% 
+  select(-c(&quot;EMP_F&quot;,&quot;FIRMPDEMP_F&quot;,&quot;state&quot;,&quot;county&quot;))
+
+firmlevel_2017 &lt;- firmlevel_2017 %&gt;% 
+  mutate(county_FIPS = paste(state, county, sep = &quot;&quot;),
+         EMP = as.numeric(EMP),
+         FIRMPDEMP = as.numeric(FIRMPDEMP),
+         EMP = case_when(EMP_F == &quot;a&quot; ~ round(median(seq(0,19)), digits = 0),  # For employment range symbols, replace with median of the range
+                         EMP_F == &quot;b&quot; ~ round(median(seq(20,99)), digits = 0),
+                         EMP_F == &quot;c&quot; ~ round(median(seq(100,249)), digits = 0),
+                         EMP_F == &quot;e&quot; ~ round(median(seq(250,499)), digits = 0),
+                         EMP_F == &quot;f&quot; ~ round(median(seq(500,999)), digits = 0),
+                         EMP_F == &quot;g&quot; ~ round(median(seq(1000,2499)), digits = 0),
+                         EMP_F == &quot;h&quot; ~ round(median(seq(2500,4999)), digits = 0),
+                         EMP_F == &quot;i&quot; ~ round(median(seq(5000,9999)), digits = 0),
+                         EMP_F == &quot;j&quot; ~ round(median(seq(10000,24999)), digits = 0),
+                         EMP_F == &quot;k&quot; ~ round(median(seq(25000,49999)), digits = 0),
+                         EMP_F == &quot;l&quot; ~ round(median(seq(50000,99999)), digits = 0),
+                         EMP_F == &quot;m&quot; ~ 100000,
+                         TRUE ~ EMP),
+         FIRMPDEMP = case_when(FIRMPDEMP_F == &quot;S&quot; ~ NA_real_, TRUE ~ FIRMPDEMP)) %&gt;% 
+  rename(emp_abs_2017 = EMP, firm_2017 = FIRMPDEMP) %&gt;% 
+  select(-c(&quot;EMP_F&quot;,&quot;FIRMPDEMP_F&quot;,&quot;state&quot;,&quot;county&quot;))
+
+## Join the two years, filter Texas, and calculate change variable ##
+firmlevel_tx &lt;- left_join(firmlevel_2012, firmlevel_2017, by = &quot;county_FIPS&quot;) %&gt;% filter(str_detect(county_FIPS, &quot;^48&quot;)) %&gt;% 
+  mutate(chg_firm_2012_2017 = firm_2017 - firm_2012)</code></pre>
+</div>
+</div>
+<div id="acs-broadband-measures" class="section level2">
+<h2>ACS Broadband Measures</h2>
+<p>The ACS broadband subscription measures currently available from the dataset provided by the Arizona State University research team represents people with <strong>“any”</strong> type of broadband <em>including cell phone subscription</em>. This not only could potentially inflate the subscription number, but also does not allow much comparability with other broadband variables. Therefore, I will <strong>call the ACS data directly to retrieve fixed broadband subscription</strong> excluding wireless options such as satellite and cell phone broadband.</p>
+<pre class="r"><code>#### ACS Broadband Subscription Dataset ####
+View(listCensusMetadata(name = &quot;acs/acs5&quot;, vintage = 2018, type = &quot;variables&quot;))
+View(listCensusMetadata(name = &quot;acs/acs5/profile&quot;, vintage = 2018, type = &quot;variables&quot;))
+View(listCensusMetadata(name = &quot;acs/acs5/subject&quot;, vintage = 2018, type = &quot;variables&quot;))
+View(listCensusMetadata(name = &quot;acs/acs5/subject&quot;, vintage = 2018, type = &quot;geography&quot;))</code></pre>
+<pre class="r"><code>## Broadband Subscription Percentage from Subject Table ##
+acs_broadband_pct &lt;- getCensus(name = &quot;acs/acs5/subject&quot;, vintage = 2018,
+                               vars = c(&quot;S2801_C02_017E&quot;,&quot;S2801_C02_019E&quot;,&quot;S2801_C02_016E&quot;,&quot;S2801_C02_018E&quot;),
+                               region = &quot;county:*&quot;,
+                               regionin = &quot;state:20,23,48&quot;)
+
+str(acs_broadband_pct)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    375 obs. of  6 variables:
+##  $ state         : chr  &quot;48&quot; &quot;48&quot; &quot;48&quot; &quot;48&quot; ...
+##  $ county        : chr  &quot;015&quot; &quot;261&quot; &quot;355&quot; &quot;089&quot; ...
+##  $ S2801_C02_017E: num  37.6 13.9 60.5 36 51.9 37.5 71.6 50.6 55.5 54.4 ...
+##  $ S2801_C02_019E: num  27.6 55 21 36.1 30.2 27.7 13.5 36.9 28.7 31.1 ...
+##  $ S2801_C02_016E: num  18.4 29.2 15.1 11.1 12 14.9 9.8 9.1 11.1 4.3 ...
+##  $ S2801_C02_018E: num  16.5 1.9 5 15 7.6 22.8 7.5 7.3 4.9 12.7 ...</code></pre>
+<pre class="r"><code>table(acs_broadband_pct$state)</code></pre>
+<pre><code>## 
+##  20  23  48 
+## 105  16 254</code></pre>
+<pre class="r"><code># Rename variables #
+acs_broadband_pct &lt;- acs_broadband_pct %&gt;% 
+  rename(pct_cellular_acs_2018 = S2801_C02_016E,
+         pct_fixed_acs_2018 = S2801_C02_017E,
+         pct_sat_acs_2018 = S2801_C02_018E,
+         pct_nobroadband_acs_2018 = S2801_C02_019E) %&gt;% 
+  mutate(pct_anybroadband_acs_2018 = 100 - pct_nobroadband_acs_2018,
+         county_FIPS = paste(state, county, sep = &quot;&quot;))
+
+str(acs_broadband_pct)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    375 obs. of  8 variables:
+##  $ state                    : chr  &quot;48&quot; &quot;48&quot; &quot;48&quot; &quot;48&quot; ...
+##  $ county                   : chr  &quot;015&quot; &quot;261&quot; &quot;355&quot; &quot;089&quot; ...
+##  $ pct_fixed_acs_2018       : num  37.6 13.9 60.5 36 51.9 37.5 71.6 50.6 55.5 54.4 ...
+##  $ pct_nobroadband_acs_2018 : num  27.6 55 21 36.1 30.2 27.7 13.5 36.9 28.7 31.1 ...
+##  $ pct_cellular_acs_2018    : num  18.4 29.2 15.1 11.1 12 14.9 9.8 9.1 11.1 4.3 ...
+##  $ pct_sat_acs_2018         : num  16.5 1.9 5 15 7.6 22.8 7.5 7.3 4.9 12.7 ...
+##  $ pct_anybroadband_acs_2018: num  72.4 45 79 63.9 69.8 72.3 86.5 63.1 71.3 68.9 ...
+##  $ county_FIPS              : chr  &quot;48015&quot; &quot;48261&quot; &quot;48355&quot; &quot;48089&quot; ...</code></pre>
+<pre class="r"><code>acs_broadband_pct_tx &lt;- acs_broadband_pct %&gt;% 
+  filter(state == &quot;48&quot;)</code></pre>
 <p>Now we will merge these datasets by county FIPS numbers altogether</p>
-<pre class="r"><code>## Join the aggregated Census datasets ##
-cbp_tx &lt;- left_join(cbp2017_tx_agg, cbp2018_tx_agg, by = &quot;county_FIPS&quot;)
-nonemp_tx &lt;- left_join(nonemp2017_tx_agg, nonemp2018_tx_agg, by = &quot;county_FIPS&quot;)
-
-## Create a V2 merged dataset ##
+<pre class="r"><code>## Create a V2 merged dataset ##
 tx_bb_entrepreneur_merged_v2 &lt;- tx_bb_entrepreneur_merged %&gt;% 
   mutate(FIPS = as.character(FIPS)) %&gt;% 
   left_join(., cbp_tx, by = c(&quot;FIPS&quot; = &quot;county_FIPS&quot;)) %&gt;% 
-  left_join(., nonemp_tx, by = c(&quot;FIPS&quot; = &quot;county_FIPS&quot;))
+  left_join(., nonemp_tx, by = c(&quot;FIPS&quot; = &quot;county_FIPS&quot;)) %&gt;% 
+  left_join(., acs_broadband_pct_tx, by = c(&quot;FIPS&quot; = &quot;county_FIPS&quot;)) %&gt;% 
+  left_join(., bea_nonfarmproprietor_tx, by = c(&quot;FIPS&quot; = &quot;GeoFips&quot;)) %&gt;% 
+  left_join(., firmlevel_tx, by = c(&quot;FIPS&quot; = &quot;county_FIPS&quot;))
 
-## Generate average GoDaddy &amp; M-lab broadband measures ##
+## Generate average GoDaddy &amp; M-lab broadband measures and clean unnecessary variables ##
 tx_bb_entrepreneur_merged_v2 &lt;- tx_bb_entrepreneur_merged_v2 %&gt;% 
   mutate(venturedensity_mean = (venturedensitymay18 + venturedensitynov18 + venturedensityfeb19 + venturedensitysep19 + venturedensityoct19 + venturedensitynov19 + venturedensitydec19) / 7,
          highlyactive_vd_mean = (highlyactive_vdmay18 + highlyactive_vdnov18 + highlyactive_vdfeb19 + highlyactive_vdsep19 + highlyactive_vdoct19 + highlyactive_vdnov19 + highlyactive_vddec19) / 7,
-         pct_broadband_mlab = (frac_BB.sept + frac_BB.oct + frac_BB.nov + frac_BB.dec) / 4)
+         pct_broadband_mlab = (frac_BB.sept + frac_BB.oct + frac_BB.nov + frac_BB.dec) / 4) %&gt;% 
+  select(-c(starts_with(&quot;frac_under_&quot;), starts_with(&quot;frac_over&quot;), starts_with(&quot;samples.&quot;), starts_with(&quot;BB_samples&quot;), pctbbfrac_poor_ASU, state.y, county.y, starts_with(&quot;DL&quot;), starts_with(&quot;UL&quot;), starts_with(&quot;dl_sample&quot;), starts_with(&quot;ul_sample&quot;))) %&gt;% 
+  rename(state = state.x, county = county.x)
 
 ## Write CSV ##
 write_csv(tx_bb_entrepreneur_merged_v2, &quot;Broadband-Entrepreneurship-TX-merged_v2.csv&quot;)</code></pre>
@@ -817,23 +1202,6 @@ $(document).ready(function () {
 
 
 </script>
-
-<!-- tabsets -->
-
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
-<!-- code folding -->
-
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
