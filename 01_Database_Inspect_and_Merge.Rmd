@@ -886,7 +886,7 @@ tx_bb_entrepreneur_merged_v2 <- tx_bb_entrepreneur_merged_v2 %>%
   mutate(venturedensity_mean = (venturedensitymay18 + venturedensitynov18 + venturedensityfeb19 + venturedensitysep19 + venturedensityoct19 + venturedensitynov19 + venturedensitydec19) / 7,
          highlyactive_vd_mean = (highlyactive_vdmay18 + highlyactive_vdnov18 + highlyactive_vdfeb19 + highlyactive_vdsep19 + highlyactive_vdoct19 + highlyactive_vdnov19 + highlyactive_vddec19) / 7,
          pct_broadband_mlab = (frac_BB.sept + frac_BB.oct + frac_BB.nov + frac_BB.dec) / 4) %>% 
-  select(-c(starts_with("frac_under_"), starts_with("frac_over"), starts_with("samples."), starts_with("BB_samples"), pctbbfrac_poor_ASU, state.y, county.y, starts_with("DL"), starts_with("UL"), starts_with("dl_sample"), starts_with("ul_sample"))) %>% 
+  select(-c(starts_with("frac_under_"), starts_with("frac_over"), starts_with("samples."), starts_with("BB_samples"), pctbbfrac_poor_ASU, state.y, county.y, starts_with("DL"), starts_with("UL"), starts_with("dl_sample"), starts_with("ul_sample")), net_migration) %>% 
   rename(state = state.x, county = county.x)
 
 ## Write CSV ##
