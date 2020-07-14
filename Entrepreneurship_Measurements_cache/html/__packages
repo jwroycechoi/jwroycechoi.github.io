@@ -1,0 +1,16 @@
+base
+leaflet
+tidyverse
+ggplot2
+tibble
+tidyr
+readr
+purrr
+dplyr
+stringr
+forcats
+RColorBrewer
+tigris
+sp
+stargazer
+gridExtra
