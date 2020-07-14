@@ -11,7 +11,7 @@ navbar:
     - text: "Broadband Measurements"
       href: Broadband_Measurements.html
     - text: "Entrepreneurship Measurements"
-      href: Entrepreneurship Measurements.html
+      href: Entrepreneurship_Measurements.html
     - text: "Regression Models"
       href: Regression_Analyses.html
 output:
