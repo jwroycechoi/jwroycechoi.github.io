@@ -25,7 +25,8 @@ tx_bb_entrepreneur_merged_v2 <- read_csv("https://raw.githubusercontent.com/jwro
 
 tx_bb_entrepreneur_merged_v2 <- tx_bb_entrepreneur_merged_v2 %>% 
   mutate(chg_pct_50_est_cbp_2012_2018 = pct_50_est_cbp_2018 - pct_50_est_cbp_2012,
-         chg_pct_10_est_cbp_2012_2018 = pct_10_est_cbp_2018 - pct_10_est_cbp_2012)
+         chg_pct_10_est_cbp_2012_2018 = pct_10_est_cbp_2018 - pct_10_est_cbp_2012,
+         chgn_nonemp_2012_2018 = neest_nemp_2018 - neest_nemp_2012)
 
 ```
 
@@ -39,6 +40,7 @@ First, let's take another look at some of the key variables.
 * `pct_change_pro_emp_2010_2017`: Change in % of sole proprietors b/w 2010-2017
 * `chg_pct_10_est_cbp_2012_2018`: Change in % of establishments with less than 10 employees b/w 2012-2017
 * `chg_pct_nonfarmneest_nemp_2012_2018`: Change in % of nonfarm nonemployer b/w 2012-2018
+* `chgn_nonemp_2012_2018`: Change in nonemployer establishments b/w 2012-2018
 * `pct_chg_bea_2012_2018`: Change in % of nonfarm proprietors b/w 2012-2018
 * `venturedensity_mean`: Venture density
 * `highlyactivevd_mean`: Highly active venture density
@@ -60,213 +62,281 @@ Entrepreneurial outcomes can be represented by several variables in this dataset
 
 For control variables, various demographic measures derived from the ACS estimates are available in the dataset. Furthermore, the ruralithy of the counties are reflected in the IRR index. Number of population, and regional intustry characteristics will be also included as control variables.
 
-## FCC Broadband Availability
+## Change in Nonfarm Proprietors Share
 
-```{r FCC Regression Analyses, results='asis'}
+* DV: Change in Nonfarm Proprietor Share (2012-2018)
+* IV: FCC Broadband availability, MS Broadband, ACS Broadband Subscription, M-Lab Broadband Usage
+* Control: Rurality, Industry structure, Education, Age
+
+```{r Change in Nonfarm Proprietors Share, results='asis', echo=FALSE}
 #### Model 1 ####
 
-## DV: Venture Density, Highly Active VD, Change in Proprietors Share
-## IV: Broadband Availability (FCC)
+## DV: Change in Nonfarm Proprietors Share
+## IV: Broadband Availability (FCC) -> MS -> ACS -> M-lab
 
-model_fcc_vd <- lm(venturedensity_mean ~ pct_broadband_FCC + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+model_nonfarm_1 <- lm(pct_chg_bea_2012_2018 ~ pct_broadband_FCC + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
               data = tx_bb_entrepreneur_merged_v2)
 
-model_fcc_hvd <- lm(highlyactive_vd_mean ~ pct_broadband_FCC + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+model_nonfarm_2 <- lm(pct_chg_bea_2012_2018 ~ pct_broadband_FCC + pct_broadband_MS + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
               data = tx_bb_entrepreneur_merged_v2)
 
-model_fcc_pro <- lm(pct_chg_bea_2012_2018 ~ pct_broadband_FCC + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+model_nonfarm_3 <- lm(pct_chg_bea_2012_2018 ~ pct_broadband_FCC + pct_broadband_MS + pct_fixed_acs_2018 + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
               data = tx_bb_entrepreneur_merged_v2)
+
+model_nonfarm_4 <- lm(pct_chg_bea_2012_2018 ~ pct_broadband_FCC + pct_broadband_MS + pct_fixed_acs_2018 + pct_broadband_mlab + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+              data = tx_bb_entrepreneur_merged_v2)
+
 ## Generate Table
-stargazer(model_fcc_vd, model_fcc_hvd, model_fcc_pro, title = "Regression Results", type = "html",
-          align = TRUE, dep.var.labels = c("Venture Density","Highly Active VD", "Proprietors Share"),
-          covariate.labels = c("FCC Broadband Availability","Rurality Index (2010)","Population","Black","Native American","Asian","Hispanic","Agriculture","Construction","Wholesale","Retail","Transportation","IT","Finance","Professional","Education","Other occupation","Public","Highschool","College","Millenials","GenX","Babyboomer","Foreign Born","Median Income (2017)"),
-          omit.stat = c("ser"), no.space = TRUE)
+stargazer(model_nonfarm_1, model_nonfarm_2, model_nonfarm_3, model_nonfarm_4, title = "Change in Nonfarm Proprietors Share Regression Results", type = "html",
+          align = TRUE, dep.var.labels = c("Change in Nonfarm Proprietors Share"),
+          covariate.labels = c("FCC Broadband Availability","MS Broadband","ACS Broadband Sub","M-Lab Broadband","Rurality Index (2010)","Agriculture","Construction","Wholesale","Retail","Transportation","IT","Finance","Professional","Education","Other occupation","Public","Highschool","College","Millenials","GenX","Babyboomer"), no.space = TRUE)
 
 ```
 
-## MS Broadband Availability
+## Change in Establishment with <10 Employees (2012-2018)
 
-```{r MS Regression Analyses, results='asis'}
+* DV: Change in Establishment with <10 Employees (2012-2018)
+* IV: FCC Broadband availability, MS Broadband, ACS Broadband Subscription, M-Lab Broadband Usage
+* Control: Rurality, Industry structure, Education, Age
+
+```{r Change in Establishment with <10 Employees, results='asis', echo=FALSE}
 #### Model 2 ####
 
-## DV: Venture Density, Highly Active VD, Change in Proprietors Share
-## IV: Broadband Availability (MS)
+## DV: Change in Establishment with <10 Employees
+## IV: Broadband Availability (FCC) -> MS -> ACS -> M-lab
 
-model_ms_vd <- lm(venturedensity_mean ~ pct_broadband_MS + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+model_10emp_1 <- lm(chg_pct_10_est_cbp_2012_2018 ~ pct_broadband_FCC + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
               data = tx_bb_entrepreneur_merged_v2)
 
-model_ms_hvd <- lm(highlyactive_vd_mean ~ pct_broadband_MS + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+model_10emp_2 <- lm(chg_pct_10_est_cbp_2012_2018 ~ pct_broadband_FCC + pct_broadband_MS + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
               data = tx_bb_entrepreneur_merged_v2)
 
-model_ms_pro <- lm(pct_chg_bea_2012_2018 ~ pct_broadband_MS + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+model_10emp_3 <- lm(chg_pct_10_est_cbp_2012_2018 ~ pct_broadband_FCC + pct_broadband_MS + pct_fixed_acs_2018 + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
               data = tx_bb_entrepreneur_merged_v2)
+
+model_10emp_4 <- lm(chg_pct_10_est_cbp_2012_2018 ~ pct_broadband_FCC + pct_broadband_MS + pct_fixed_acs_2018 + pct_broadband_mlab + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+              data = tx_bb_entrepreneur_merged_v2)
+
 ## Generate Table
-stargazer(model_ms_vd, model_ms_hvd, model_ms_pro, title = "Regression Results", type = "html",
-          align = TRUE, dep.var.labels = c("Venture Density","Highly Active VD", "Proprietors Share"),
-          covariate.labels = c("MS Broadband Availability","Rurality Index (2010)","Population","Black","Native American","Asian","Hispanic","Agriculture","Construction","Wholesale","Retail","Transportation","IT","Finance","Professional","Education","Other occupation","Public","Highschool","College","Millenials","GenX","Babyboomer","Foreign Born","Median Income (2017)"),
-          omit.stat = c("ser"), no.space = TRUE)
+stargazer(model_10emp_1, model_10emp_2, model_10emp_3, model_10emp_4, title = "Change in Establishment <10 Regression Results", type = "html",
+          align = TRUE, dep.var.labels = c("Change in Establishment <10 Share"),
+          covariate.labels = c("FCC Broadband Availability","MS Broadband","ACS Broadband Sub","M-Lab Broadband","Rurality Index (2010)","Agriculture","Construction","Wholesale","Retail","Transportation","IT","Finance","Professional","Education","Other occupation","Public","Highschool","College","Millenials","GenX","Babyboomer"), no.space = TRUE)
 ```
 
-## ACS Broadband Subscription Level
+## Change in Nonfarm Nonemployers Share (2012-2018)
 
-```{r ACS Regression Analyses, results='asis'}
+* DV: Change in Nonfarm Nonemployers Share (2012-2018)
+* IV: FCC Broadband availability, MS Broadband, ACS Broadband Subscription, M-Lab Broadband Usage
+* Control: Rurality, Industry structure, Education, Age
+
+```{r Change in Nonfarm Nonemployers Share, results='asis', echo=FALSE}
 #### Model 3 ####
 
-## DV: Venture Density, Highly Active VD, Change in Proprietors Share
-## IV: Broadband Subscription (ACS)
+## DV: Change in Nonfarm Nonemployers Share (2012-2018)
+## IV: Broadband Availability (FCC) -> MS -> ACS -> M-lab
 
-model_acs_vd <- lm(venturedensity_mean ~ pct_fixed_acs_2018 + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+model_nf_nonemp_1 <- lm(chg_pct_nonfarmneest_nemp_2012_2018 ~ pct_broadband_FCC + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
               data = tx_bb_entrepreneur_merged_v2)
 
-model_acs_hvd <- lm(highlyactive_vd_mean ~ pct_fixed_acs_2018 + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+model_nf_nonemp_2 <- lm(chg_pct_nonfarmneest_nemp_2012_2018 ~ pct_broadband_FCC + pct_broadband_MS + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
               data = tx_bb_entrepreneur_merged_v2)
 
-model_acs_pro <- lm(pct_chg_bea_2012_2018 ~ pct_fixed_acs_2018 + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+model_nf_nonemp_3 <- lm(chg_pct_nonfarmneest_nemp_2012_2018 ~ pct_broadband_FCC + pct_broadband_MS + pct_fixed_acs_2018 + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
               data = tx_bb_entrepreneur_merged_v2)
+
+model_nf_nonemp_4 <- lm(chg_pct_nonfarmneest_nemp_2012_2018 ~ pct_broadband_FCC + pct_broadband_MS + pct_fixed_acs_2018 + pct_broadband_mlab + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+              data = tx_bb_entrepreneur_merged_v2)
+
 ## Generate Table
-stargazer(model_acs_vd, model_acs_hvd, model_acs_pro, title = "Regression Results", type = "html",
-          align = TRUE, dep.var.labels = c("Venture Density","Highly Active VD", "Proprietors Share"),
-          covariate.labels = c("ACS Broadband Subscription","Rurality Index (2010)","Population","Black","Native American","Asian","Hispanic","Agriculture","Construction","Wholesale","Retail","Transportation","IT","Finance","Professional","Education","Other occupation","Public","Highschool","College","Millenials","GenX","Babyboomer","Foreign Born","Median Income (2017)"),
-          omit.stat = c("ser"), no.space = TRUE)
+stargazer(model_nf_nonemp_1, model_nf_nonemp_2, model_nf_nonemp_3, model_nf_nonemp_4, title = "Change in Nonfarm Nonemployers Share Regression Results", type = "html",
+          align = TRUE, dep.var.labels = c("Change in Nonfarm Nonemployers Share"),
+          covariate.labels = c("FCC Broadband Availability","MS Broadband","ACS Broadband Sub","M-Lab Broadband","Rurality Index (2010)","Agriculture","Construction","Wholesale","Retail","Transportation","IT","Finance","Professional","Education","Other occupation","Public","Highschool","College","Millenials","GenX","Babyboomer"), no.space = TRUE)
 
 ```
 
-## M-Lab Broadband Availability
+## Change in Nonemployer Establishments (2012-2018)
 
-```{r M-Lab Regression Analyses, results='asis'}
+* DV: Change in Nonemployer Establishments (2012-2018)
+* IV: FCC Broadband availability, MS Broadband, ACS Broadband Subscription, M-Lab Broadband Usage
+* Control: Rurality, Industry structure, Education, Age
+
+```{r Change in nonemployer establishments 2012-2018, results='asis', echo=FALSE}
 #### Model 4 ####
 
-## DV: Venture Density, Highly Active VD, Change in Proprietors Share
-## IV: Broadband Availability (M-Lab)
+## DV: Change in Nonemployer Establishments (2012-2018)
+## IV: Broadband Availability (FCC) -> MS -> ACS -> M-lab
 
-model_mlab_vd <- lm(venturedensity_mean ~ pct_broadband_mlab + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+model_nonemp_1 <- lm(chgn_nonemp_2012_2018 ~ pct_broadband_FCC + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
               data = tx_bb_entrepreneur_merged_v2)
 
-model_mlab_hvd <- lm(highlyactive_vd_mean ~ pct_broadband_mlab + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+model_nonemp_2 <- lm(chgn_nonemp_2012_2018 ~ pct_broadband_FCC + pct_broadband_MS + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
               data = tx_bb_entrepreneur_merged_v2)
 
-model_mlab_pro <- lm(pct_chg_bea_2012_2018 ~ pct_broadband_mlab + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+model_nonemp_3 <- lm(chgn_nonemp_2012_2018 ~ pct_broadband_FCC + pct_broadband_MS + pct_fixed_acs_2018 + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
               data = tx_bb_entrepreneur_merged_v2)
+
+model_nonemp_4 <- lm(chgn_nonemp_2012_2018 ~ pct_broadband_FCC + pct_broadband_MS + pct_fixed_acs_2018 + pct_broadband_mlab + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+              data = tx_bb_entrepreneur_merged_v2)
+
 ## Generate Table
-stargazer(model_mlab_vd, model_mlab_hvd, model_mlab_pro, title = "Regression Results", type = "html",
-          align = TRUE, dep.var.labels = c("Venture Density","Highly Active VD", "Proprietors Share"),
-          covariate.labels = c("M-Lab Broadband","Rurality Index (2010)","Population","Black","Native American","Asian","Hispanic","Agriculture","Construction","Wholesale","Retail","Transportation","IT","Finance","Professional","Education","Other occupation","Public","Highschool","College","Millenials","GenX","Babyboomer","Foreign Born","Median Income (2017)"),
-          omit.stat = c("ser"), no.space = TRUE)
+stargazer(model_nonemp_1, model_nonemp_2, model_nonemp_3, model_nonemp_4, title = "Change in Nonemployer Regression Results", type = "html",
+          align = TRUE, dep.var.labels = c("Change in Nonemployer"),
+          covariate.labels = c("FCC Broadband Availability","MS Broadband","ACS Broadband Sub","M-Lab Broadband","Rurality Index (2010)","Agriculture","Construction","Wholesale","Retail","Transportation","IT","Finance","Professional","Education","Other occupation","Public","Highschool","College","Millenials","GenX","Babyboomer"), no.space = TRUE)
+```
+
+## Venture Density
+
+* DV: Venture Density
+* IV: FCC Broadband availability, MS Broadband, ACS Broadband Subscription, M-Lab Broadband Usage
+* Control: Rurality, Industry structure, Education, Age
+
+```{r Venture Density, results='asis', echo=FALSE}
+#### Model 4 ####
+
+## DV: Venture density
+## IV: Broadband Availability (FCC) -> MS -> ACS -> M-lab
+
+model_vd_1 <- lm(venturedensity_mean ~ pct_broadband_FCC + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+              data = tx_bb_entrepreneur_merged_v2)
+
+model_vd_2 <- lm(venturedensity_mean ~ pct_broadband_FCC + pct_broadband_MS + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+              data = tx_bb_entrepreneur_merged_v2)
+
+model_vd_3 <- lm(venturedensity_mean ~ pct_broadband_FCC + pct_broadband_MS + pct_fixed_acs_2018 + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+              data = tx_bb_entrepreneur_merged_v2)
+
+model_vd_4 <- lm(venturedensity_mean ~ pct_broadband_FCC + pct_broadband_MS + pct_fixed_acs_2018 + pct_broadband_mlab + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+              data = tx_bb_entrepreneur_merged_v2)
+
+## Generate Table
+stargazer(model_vd_1, model_vd_2, model_vd_3, model_vd_4, title = "Venture Density Regression Results", type = "html",
+          align = TRUE, dep.var.labels = c("Venture Density"),
+          covariate.labels = c("FCC Broadband Availability","MS Broadband","ACS Broadband Sub","M-Lab Broadband","Rurality Index (2010)","Agriculture","Construction","Wholesale","Retail","Transportation","IT","Finance","Professional","Education","Other occupation","Public","Highschool","College","Millenials","GenX","Babyboomer"), no.space = TRUE)
 
 ```
 
-### Models with Fewer Control Variables
+## Highly Active Venture Density
 
-Below, simpler models with fewer, yet important control variables will be explored. In a previous meeting with Dr.Brian Whitacre, he suggested age and education might be meaningful control variables. Here I will use rurality index, population, education, and age cohort variables as control variables.
+* DV: Highly Active Venture Density
+* IV: FCC Broadband availability, MS Broadband, ACS Broadband Subscription, M-Lab Broadband Usage
+* Control: Rurality, Industry structure, Education, Age
 
-## FCC Broadband Availability
+```{r Highly Active Venture Density, results='asis', echo=FALSE}
+#### Model 4 ####
 
-```{r FCC Simpler Regression Models, results='asis'}
-## Fewer Control Variables: Rurality, population, education level, age cohorts
-## FCC Broadband
-# VD model
-model_fcc_vd2 <- lm(venturedensity_mean ~ pct_broadband_FCC + IRR2010 + population + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
-                    data = tx_bb_entrepreneur_merged_v2)
+## DV: Highly Active Venture density
+## IV: Broadband Availability (FCC) -> MS -> ACS -> M-lab
 
-# HVD model
-model_fcc_hvd2 <- lm(highlyactive_vd_mean ~ pct_broadband_FCC + IRR2010 + population + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
-                    data = tx_bb_entrepreneur_merged_v2)
+model_havd_1 <- lm(highlyactive_vd_mean ~ pct_broadband_FCC + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+              data = tx_bb_entrepreneur_merged_v2)
 
-# Proprietor model
-model_fcc_pro2 <- lm(pct_chg_bea_2012_2018 ~ pct_broadband_FCC + IRR2010 + population + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
-                     data = tx_bb_entrepreneur_merged_v2)
+model_havd_2 <- lm(highlyactive_vd_mean ~ pct_broadband_FCC + pct_broadband_MS + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+              data = tx_bb_entrepreneur_merged_v2)
+
+model_havd_3 <- lm(highlyactive_vd_mean ~ pct_broadband_FCC + pct_broadband_MS + pct_fixed_acs_2018 + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+              data = tx_bb_entrepreneur_merged_v2)
+
+model_havd_4 <- lm(highlyactive_vd_mean ~ pct_broadband_FCC + pct_broadband_MS + pct_fixed_acs_2018 + pct_broadband_mlab + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+              data = tx_bb_entrepreneur_merged_v2)
 
 ## Generate Table
-stargazer(model_fcc_vd2, model_fcc_hvd2, model_fcc_pro2, type = "html", align = T,
-          dep.var.labels = c("Venture Density","Highly Active VD", "Proprietors Share"),
-          covariate.labels = c("FCC Broadband Availability",
+stargazer(model_havd_1, model_havd_2, model_havd_3, model_havd_4, title = "Highly Active Venture Density Regression Results", type = "html",
+          align = TRUE, dep.var.labels = c("Highly Active Venture Density"),
+          covariate.labels = c("FCC Broadband Availability","MS Broadband","ACS Broadband Sub","M-Lab Broadband","Rurality Index (2010)","Agriculture","Construction","Wholesale","Retail","Transportation","IT","Finance","Professional","Education","Other occupation","Public","Highschool","College","Millenials","GenX","Babyboomer"), no.space = TRUE)
+
+```
+
+
+### Models with Proprietor/Nonemp as IV
+
+Below, I explore regression models that consider **proprietors share or nonemployer establishments as independent variables** representing overall industry characteristics of the county. Dependent variables are **venture density** measures as representations of entrepreneurial activities online.
+
+* DV: Venture Density, Highly Active Venture Density
+* IV: Nonfarm Proprietor Share, Nonemployer, FCC Broadband availability, MS, ACS, M-Lab
+* Control: Rurality, Education, Age
+
+```{r Venture Density and Proprietor as IV, results='asis', echo=FALSE}
+
+model_vd_2.1 <- lm(venturedensity_mean ~ pct_nonfarm_bea_2018 + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+              data = tx_bb_entrepreneur_merged_v2)
+
+model_vd_2.2 <- lm(venturedensity_mean ~ pct_nonfarm_bea_2018 + nonfarmneest_nemp_2018 + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+              data = tx_bb_entrepreneur_merged_v2)
+
+model_vd_2.3 <- lm(venturedensity_mean ~ pct_nonfarm_bea_2018 + nonfarmneest_nemp_2018 + pct_broadband_FCC + pct_broadband_MS + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+              data = tx_bb_entrepreneur_merged_v2)
+
+model_vd_2.4 <- lm(venturedensity_mean ~ pct_nonfarm_bea_2018 + nonfarmneest_nemp_2018 + pct_broadband_FCC + pct_broadband_MS + pct_fixed_acs_2018 + pct_broadband_mlab + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+              data = tx_bb_entrepreneur_merged_v2)
+
+## Generate Table
+stargazer(model_vd_2.1, model_vd_2.2, model_vd_2.3, model_vd_2.4, type = "html", align = T,
+          dep.var.labels = c("Venture Density"),
+          covariate.labels = c("Nonfarm Proprietor (%)",
+                               "Nonfarm Nonemployer",
+                               "FCC Broadband Availability",
+                               "MS Broadband",
+                               "ACS Broadband Subs",
+                               "M-Lab Broadband Use",
                                "Rurality Index (2010)",
-                               "Population","Highschool","College",
-                               "Millenials","GenX","Babyboomer"),
-          omit.stat = c("ser"), no.space = T)
+                               "Agriculture",
+                               "Construction",
+                               "Wholesale",
+                               "Retail",
+                               "Transportation",
+                               "IT",
+                               "Finance",
+                               "Professional",
+                               "Education",
+                               "Other occupation","Public","Highschool","College","Millenials","GenX","Babyboomer"),
+          no.space = T)
 
 
 ```
 
 ## MS Broadband Availability
 
-```{r MS Simpler Models, results='asis'}
-## MS Broadband
-# VD model
-model_ms_vd2 <- lm(venturedensity_mean ~ pct_broadband_MS + IRR2010 + population + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
-                   data = tx_bb_entrepreneur_merged_v2)
+* DV: Venture Density, Highly Active VD, Change in Nonfarm Proprietor Share (2012-2018)
+* IV: MS Broadband 
+* Control: Rurality, Education, Age
 
-# HVD model
-model_ms_hvd2 <- lm(highlyactive_vd_mean ~ pct_broadband_MS + IRR2010 + population + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
-                   data = tx_bb_entrepreneur_merged_v2)
+```{r Highly Active VD and Proprietor as IV, results='asis', echo=FALSE}
 
-# Proprietor model
-model_ms_pro2 <- lm(pct_chg_bea_2012_2018 ~ pct_broadband_MS + IRR2010 + population + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
-                   data = tx_bb_entrepreneur_merged_v2)
+model_havd_2.1 <- lm(highlyactive_vd_mean ~ pct_nonfarm_bea_2018 + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+              data = tx_bb_entrepreneur_merged_v2)
+
+model_havd_2.2 <- lm(highlyactive_vd_mean ~ pct_nonfarm_bea_2018 + nonfarmneest_nemp_2018 + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+              data = tx_bb_entrepreneur_merged_v2)
+
+model_havd_2.3 <- lm(highlyactive_vd_mean ~ pct_nonfarm_bea_2018 + nonfarmneest_nemp_2018 + pct_broadband_FCC + pct_broadband_MS + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+              data = tx_bb_entrepreneur_merged_v2)
+
+model_havd_2.4 <- lm(highlyactive_vd_mean ~ pct_nonfarm_bea_2018 + nonfarmneest_nemp_2018 + pct_broadband_FCC + pct_broadband_MS + pct_fixed_acs_2018 + pct_broadband_mlab + IRR2010 + pctagriculture + pctconstruction + pctwholesale + pctretail + pcttransportation + pctinformation_tech + pctfinance + pctprofessional + pcteducation + pctother_occupation + pctpublic + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
+              data = tx_bb_entrepreneur_merged_v2)
 
 ## Generate Table
-stargazer(model_ms_vd2, model_ms_hvd2, model_ms_pro2, type = "html", align = T,
-          dep.var.labels = c("Venture Density","Highly Active VD", "Proprietors Share"),
-          covariate.labels = c("MS Broadband Availability",
+stargazer(model_havd_2.1, model_havd_2.2, model_havd_2.3, model_havd_2.4, type = "html", align = T,
+          dep.var.labels = c("Highly Active Venture Density"),
+          covariate.labels = c("Nonfarm Proprietor (%)",
+                               "Nonfarm Nonemployer",
+                               "FCC Broadband Availability",
+                               "MS Broadband",
+                               "ACS Broadband Subs",
+                               "M-Lab Broadband Use",
                                "Rurality Index (2010)",
-                               "Population","Highschool","College",
-                               "Millenials","GenX","Babyboomer"),
-          omit.stat = c("ser"), no.space = T)
+                               "Agriculture",
+                               "Construction",
+                               "Wholesale",
+                               "Retail",
+                               "Transportation",
+                               "IT",
+                               "Finance",
+                               "Professional",
+                               "Education",
+                               "Other occupation","Public","Highschool","College","Millenials","GenX","Babyboomer"),
+          no.space = T)
 
 ```
 
-## ACS Broadband Subscription Level
 
-```{r ACS Simpler Models, results='asis'}
-## ACS Broadband
-# VD model
-model_acs_vd2 <- lm(venturedensity_mean ~ pct_fixed_acs_2018 + IRR2010 + population + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
-                   data = tx_bb_entrepreneur_merged_v2)
-
-# HVD model
-model_acs_hvd2 <- lm(highlyactive_vd_mean ~ pct_fixed_acs_2018 + IRR2010 + population + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
-                    data = tx_bb_entrepreneur_merged_v2)
-
-# Proprietor model
-model_acs_pro2 <- lm(pct_chg_bea_2012_2018 ~ pct_fixed_acs_2018 + IRR2010 + population + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
-                    data = tx_bb_entrepreneur_merged_v2)
-
-## Generate Table
-stargazer(model_acs_vd2, model_acs_hvd2, model_acs_pro2, type = "html", align = T,
-          dep.var.labels = c("Venture Density","Highly Active VD", "Proprietors Share"),
-          covariate.labels = c("ACS Broadband Subscription",
-                               "Rurality Index (2010)",
-                               "Population","Highschool","College",
-                               "Millenials","GenX","Babyboomer"),
-          omit.stat = c("ser"), no.space = T)
-
-
-```
-
-## M-Lab Broadband Availability
-
-```{r M-Lab Simpler Models, results='asis'}
-## ACS Broadband
-# VD model
-model_mlab_vd2 <- lm(venturedensity_mean ~ pct_broadband_mlab + IRR2010 + population + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
-                   data = tx_bb_entrepreneur_merged_v2)
-
-# HVD model
-model_mlab_hvd2 <- lm(highlyactive_vd_mean ~ pct_broadband_mlab + IRR2010 + population + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
-                    data = tx_bb_entrepreneur_merged_v2)
-
-# Proprietor model
-model_mlab_pro2 <- lm(pct_chg_bea_2012_2018 ~ pct_broadband_mlab + IRR2010 + population + pcthighschool + pctcollege + pctmillennial + pctgenx + pctbabyboomer,
-                    data = tx_bb_entrepreneur_merged_v2)
-
-## Generate Table
-stargazer(model_mlab_vd2, model_mlab_hvd2, model_mlab_pro2, type = "html", align = T,
-          dep.var.labels = c("Venture Density","Highly Active VD", "Proprietors Share"),
-          covariate.labels = c("M-Lab Broadband",
-                               "Rurality Index (2010)",
-                               "Population","Highschool","College",
-                               "Millenials","GenX","Babyboomer"),
-          omit.stat = c("ser"), no.space = T)
-
-```
 
